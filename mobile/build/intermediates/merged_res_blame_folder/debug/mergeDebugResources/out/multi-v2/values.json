@@ -1,0 +1,38 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.hk1.tmuxmobile-mergeDebugResources-3:/values/values.xml",
+            "map": [
+                {
+                    "source": "/home/cd4li/tmux-tv/mobile/src/main/res/values/strings.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "47",
+                        "endOffsets": "98"
+                    }
+                },
+                {
+                    "source": "/home/cd4li/tmux-tv/mobile/src/main/res/values/styles.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "7",
+                        "endColumns": "12",
+                        "endOffsets": "411"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "103",
+                        "endLines": "8",
+                        "endColumns": "12",
+                        "endOffsets": "459"
+                    }
+                }
+            ]
+        }
+    ]
+}

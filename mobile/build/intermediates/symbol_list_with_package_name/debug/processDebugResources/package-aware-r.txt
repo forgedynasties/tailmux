@@ -1,0 +1,4 @@
+com.hk1.tmuxmobile
+mipmap ic_launcher
+string app_name
+style AppTheme

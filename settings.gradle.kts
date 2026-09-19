@@ -12,5 +12,5 @@ dependencyResolutionManagement {
         mavenCentral()
     }
 }
-rootProject.name = "TmuxTV"
-include(":app")
+rootProject.name = "tailmux"
+include(":core", ":tv", ":mobile")

@@ -1,0 +1,58 @@
+[
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable-xxxhdpi_ic_launcher.png.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-pngs-0:/drawable-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.hk1.tmuxtv.app-debug-4:/drawable-nodpi_banner.png.flat",
+        "source": "com.hk1.tmuxtv.app-main-6:/drawable-nodpi/banner.png"
+    },
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable-anydpi-v24_ic_launcher.xml.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-pngs-0:/drawable-anydpi-v24/ic_launcher.xml"
+    },
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable_banner.xml.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-main-6:/drawable/banner.xml"
+    },
+    {
+        "merged": "com.hk1.tmuxtv.app-debug-4:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.hk1.tmuxtv.app-main-6:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.hk1.tmuxtv.app-debug-4:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.hk1.tmuxtv.app-main-6:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable-xhdpi_ic_launcher.png.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-pngs-0:/drawable-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable-ldpi_ic_launcher.png.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-pngs-0:/drawable-ldpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.hk1.tmuxtv.app-debug-4:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.hk1.tmuxtv.app-main-6:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable-mdpi_ic_launcher.png.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-pngs-0:/drawable-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.hk1.tmuxtv.app-debug-4:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.hk1.tmuxtv.app-main-6:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable-xxhdpi_ic_launcher.png.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-pngs-0:/drawable-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.hk1.tmuxtv.app-debug-4:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.hk1.tmuxtv.app-main-6:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-debug-4:/drawable-hdpi_ic_launcher.png.flat",
+        "source": "/home/cd4li/.gradle/daemon/8.11.1/com.hk1.tmuxtv.app-pngs-0:/drawable-hdpi/ic_launcher.png"
+    }
+]

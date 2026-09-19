@@ -1,0 +1,3 @@
+com.hk1.tmuxmobile:style/AppTheme = 0x7f030000
+com.hk1.tmuxmobile:string/app_name = 0x7f020000
+com.hk1.tmuxmobile:mipmap/ic_launcher = 0x7f010000

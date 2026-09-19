@@ -1,0 +1,88 @@
+-- Merging decision tree log ---
+manifest
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:2:1-37:12
+INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:2:1-37:12
+INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:2:1-37:12
+INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:2:1-37:12
+MERGED from [:core] /home/cd4li/tmux-tv/core/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:2:1-7:12
+	package
+		INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
+	android:versionName
+		INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
+	android:versionCode
+		INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
+	xmlns:android
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:2:11-69
+uses-permission#android.permission.INTERNET
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:4:5-67
+	android:name
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:4:22-64
+uses-feature#android.software.leanback
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:7:5-9:36
+	android:required
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:9:9-33
+	android:name
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:8:9-49
+uses-feature#android.hardware.touchscreen
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:10:5-12:36
+	android:required
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:12:9-33
+	android:name
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:11:9-52
+application
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:14:5-36:19
+INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:14:5-36:19
+	android:extractNativeLibs
+		INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
+	android:supportsRtl
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:20:9-36
+	android:label
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:19:9-41
+	android:roundIcon
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:18:9-48
+	android:icon
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:17:9-43
+	android:allowBackup
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:15:9-36
+	android:banner
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:16:9-42
+	android:theme
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:21:9-40
+	android:usesCleartextTraffic
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:22:9-45
+activity#com.hk1.tmuxtv.MainActivity
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:24:9-35:20
+	android:screenOrientation
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:29:13-50
+	android:launchMode
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:28:13-44
+	android:exported
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:27:13-36
+	android:configChanges
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:26:13-141
+	android:name
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:25:13-41
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER+category:name:android.intent.category.LEANBACK_LAUNCHER
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:30:13-34:29
+action#android.intent.action.MAIN
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:31:17-69
+	android:name
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:31:25-66
+category#android.intent.category.LAUNCHER
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:32:17-77
+	android:name
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:32:27-74
+category#android.intent.category.LEANBACK_LAUNCHER
+ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:33:17-86
+	android:name
+		ADDED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:33:27-83
+uses-sdk
+INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
+INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
+MERGED from [:core] /home/cd4li/tmux-tv/core/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+MERGED from [:core] /home/cd4li/tmux-tv/core/build/intermediates/merged_manifest/debug/processDebugManifest/AndroidManifest.xml:5:5-44
+	android:targetSdkVersion
+		INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from /home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml
