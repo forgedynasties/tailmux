@@ -59,6 +59,14 @@ class MainActivity : Activity() {
     private fun keyPath(): String? =
         File(filesDir, "id_ed25519").let { if (it.exists()) it.absolutePath else null }
 
+    // remembered SSH passwords (encrypted via the Android Keystore)
+    private fun pwKey(ip: String, user: String) = "pw_${ip}_$user"
+    private fun savePw(ip: String, user: String, pw: String) {
+        SecretStore.encrypt(pw)?.let { prefs.edit().putString(pwKey(ip, user), it).apply() }
+    }
+    private fun loadPw(ip: String, user: String): String? =
+        prefs.getString(pwKey(ip, user), null)?.let { SecretStore.decrypt(it) }
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -221,7 +229,7 @@ class MainActivity : Activity() {
                 if (h != null && !h.online) { flash("offline", h.name); return }
                 val name = h?.name ?: ip
                 val remembered = prefs.getString("user_$ip", null)
-                if (remembered != null) listSessions(remembered, ip, name, null)
+                if (remembered != null) listSessions(remembered, ip, name, loadPw(ip, remembered))
                 else {
                     val guess = prefs.getString("last_user", "") ?: ""
                     // We already know the IP from the device list — ask only for the username.
@@ -245,6 +253,7 @@ class MainActivity : Activity() {
                     "tmux ls 2>/dev/null || true"
                 )
                 prefs.edit().putString("user_$ip", user).putString("last_user", user).apply()
+                if (password != null) savePw(ip, user, password)   // remember for next time
                 ui.post { js("API.idle()"); showSessions(user, ip, name, password, out) }
             } catch (e: SshAuthException) {
                 ui.post {
