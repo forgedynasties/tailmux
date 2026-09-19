@@ -128,6 +128,18 @@ class SshSession(
     }
 
     companion object {
+        /** The OpenSSH public-key line ("ssh-ed25519 AAAA… comment") for a private key. */
+        fun publicKeyLine(keyPath: String, comment: String = "tmuxtv"): String? = try {
+            ensureEd25519Provider()
+            val kp = com.jcraft.jsch.KeyPair.load(JSch(), keyPath)
+            val baos = ByteArrayOutputStream()
+            kp.writePublicKey(baos, comment)
+            kp.dispose()
+            baos.toString("UTF-8").trim()
+        } catch (e: Throwable) {
+            Log.e(TAG, "pubkey read failed", e); null
+        }
+
         /** Build and connect a JSch session with key and/or password auth. */
         fun openSession(
             host: String, port: Int, user: String,

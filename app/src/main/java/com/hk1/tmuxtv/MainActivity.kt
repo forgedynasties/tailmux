@@ -3,7 +3,9 @@ package com.hk1.tmuxtv
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.os.Handler
 import android.os.Looper
 import android.text.InputType
@@ -66,6 +68,24 @@ class MainActivity : Activity() {
     }
     private fun loadPw(ip: String, user: String): String? =
         prefs.getString(pwKey(ip, user), null)?.let { SecretStore.decrypt(it) }
+
+    /** ssh-copy-id: install our public key on the host so later logins use key auth. */
+    private fun copyKeyToHost(ip: String, p: Int, user: String, password: String) {
+        val kp = keyPath() ?: return
+        val pub = SshSession.publicKeyLine(kp) ?: return
+        Thread {
+            try {
+                SshSession.runCommand(
+                    ip, p, user, kp, password,
+                    "umask 077; mkdir -p ~/.ssh; " +
+                        "grep -qxF '$pub' ~/.ssh/authorized_keys 2>/dev/null || echo '$pub' >> ~/.ssh/authorized_keys"
+                )
+                Log.i(TAG, "installed key on $user@$ip")
+            } catch (e: Throwable) {
+                Log.e(TAG, "ssh-copy-id failed", e)
+            }
+        }.start()
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -253,7 +273,10 @@ class MainActivity : Activity() {
                     "tmux ls 2>/dev/null || true"
                 )
                 prefs.edit().putString("user_$ip", user).putString("last_user", user).apply()
-                if (password != null) savePw(ip, user, password)   // remember for next time
+                if (password != null) {
+                    savePw(ip, user, password)          // remember for next time
+                    copyKeyToHost(ip, p, user, password) // ssh-copy-id → key auth from now on
+                }
                 ui.post { js("API.idle()"); showSessions(user, ip, name, password, out) }
             } catch (e: SshAuthException) {
                 ui.post {
@@ -450,6 +473,9 @@ class MainActivity : Activity() {
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_BUTTON_A -> {
                 if (down && e.repeatCount == 0) zoomPane(); return true
             }
+            KeyEvent.KEYCODE_VOICE_ASSIST, KeyEvent.KEYCODE_ASSIST, KeyEvent.KEYCODE_SEARCH -> {
+                if (down && e.repeatCount == 0) startVoiceInput(); return true
+            }
             KeyEvent.KEYCODE_MENU, KeyEvent.KEYCODE_BACK -> {
                 if (down && e.repeatCount == 0) showPopup(); return true
             }
@@ -462,6 +488,12 @@ class MainActivity : Activity() {
         phase = Phase.POPUP
         val arr = JSONArray()
         arr.put(JSONObject().apply { put("id", "resume"); put("label", "Resume"); put("ico", "▸") })
+        arr.put(JSONObject().apply {
+            put("id", "voice"); put("label", "Voice input"); put("sub", "speak → active pane, then Enter"); put("ico", "🎤")
+        })
+        arr.put(JSONObject().apply {
+            put("id", "type"); put("label", "Type text"); put("sub", "keyboard → active pane"); put("ico", "⌨")
+        })
         arr.put(JSONObject().apply {
             put("id", "detach"); put("label", "Detach"); put("sub", "leave tmux running"); put("ico", "⏏")
         })
@@ -485,6 +517,8 @@ class MainActivity : Activity() {
     private fun onPopupChosen(id: String) {
         when (id) {
             "resume" -> { js("API.hideMenu()"); phase = Phase.TERMINAL }
+            "voice" -> { js("API.hideMenu()"); phase = Phase.TERMINAL; startVoiceInput() }
+            "type" -> { js("API.hideMenu()"); phase = Phase.TERMINAL; promptTypeText() }
             "sessions" -> { js("API.hideMenu()"); listSessions(curUser, curIp, curName, curPassword) }
             "devices" -> { js("API.hideMenu()"); loadHosts() }
             "detach" -> {
@@ -500,6 +534,38 @@ class MainActivity : Activity() {
 
     private fun selectPane(seq: ByteArray, glyph: String) { ssh?.send(PREFIX + seq); flash(glyph, "pane") }
     private fun zoomPane() { ssh?.send(PREFIX + byteArrayOf('z'.code.toByte())); flash("⛶", "zoom") }
+
+    // ---------- text input into the active pane ----------
+    private val reqVoice = 1001
+
+    private fun startVoiceInput() {
+        val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak — goes to the active pane")
+        }
+        try { startActivityForResult(i, reqVoice) }
+        catch (e: Exception) { flash("No voice recognizer", "install the Google app") }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == reqVoice && resultCode == RESULT_OK) {
+            val text = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            if (!text.isNullOrEmpty()) sendText(text, enter = true)
+        }
+    }
+
+    private fun promptTypeText() {
+        promptText("Type text", "text → active pane", "", false) { t ->
+            if (t.isNotEmpty()) sendText(t, enter = true)
+        }
+    }
+
+    private fun sendText(text: String, enter: Boolean) {
+        ssh?.send(text.toByteArray(Charsets.UTF_8))
+        if (enter) ssh?.send(byteArrayOf(0x0d))
+        flash("sent", text.take(28))
+    }
 
     // ---------- native input dialogs ----------
     private fun promptToken(firstRun: Boolean) {
