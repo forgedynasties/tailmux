@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.hk1.tmuxmobile-mergeDebugResources-3:/values/values.xml",
+            "outputFile": "com.cd4li.tmuxmobile-mergeDebugResources-3:/values/values.xml",
             "map": [
                 {
-                    "source": "/home/cd4li/tmux-tv/mobile/src/main/res/values/strings.xml",
+                    "source": "/home/cd4li/me/projects/tailmux/mobile/src/main/res/values/strings.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "/home/cd4li/tmux-tv/mobile/src/main/res/values/styles.xml",
+                    "source": "/home/cd4li/me/projects/tailmux/mobile/src/main/res/values/styles.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

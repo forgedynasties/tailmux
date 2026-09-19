@@ -9,8 +9,8 @@ Two Android apps sharing one backend:
 | Module | What |
 |--------|------|
 | **`:core`** | Shared backend — SSH (JSch), Tailscale device API, encrypted secret store, QR + pairing server, key generation. No UI. |
-| **`:tv`** | Android **TV** app (`com.hk1.tmuxtv`) — D-pad driven, leanback launcher. |
-| **`:mobile`** | **Phone/tablet** app (`com.hk1.tmuxmobile`) — touch UI, input bar, voice. |
+| **`:tv`** | Android **TV** app (`com.cd4li.tmuxtv`) — D-pad driven, leanback launcher. |
+| **`:mobile`** | **Phone/tablet** app (`com.cd4li.tmuxmobile`) — touch UI, input bar, voice. |
 
 ## Highlights
 
@@ -23,6 +23,23 @@ Two Android apps sharing one backend:
 - **Server down?** A *Start tmux* action boots the server so tmux-continuum
   auto-restore brings your sessions back, then lists them.
 - **Text input** — voice dictation and keyboard, straight into the active pane.
+
+## Getting started
+
+1. **Install Tailscale** on every device you'll use — the TV box, your phone, and
+   the machines you want to reach — and sign in so they're all on the same tailnet.
+2. **Generate a Tailscale API token** — [login.tailscale.com](https://login.tailscale.com/admin/settings/keys)
+   → Settings → Keys → *Generate access token* (read-only is enough).
+3. **Install and open tailmux** (the TV or mobile app).
+4. **Give it the token** — on the **TV**, scan the on-screen QR with your phone and
+   paste the token there; on **mobile**, paste it straight into the prompt.
+5. **Pick a device** from the list (online ones have a green dot), then enter the
+   **SSH username** — remembered per host after the first time.
+6. **Authenticate** — key auth if the host already has your key; otherwise enter the
+   **password once**. tailmux runs `ssh-copy-id` for you, so it's key-based next time.
+7. **Choose a tmux session** (or *New session* / *Plain shell*) and you're attached.
+   If the host's tmux server is down, pick **Start tmux** to boot it and let
+   tmux-continuum restore your sessions.
 
 ## Controls
 
@@ -51,7 +68,7 @@ SSH key on first launch; authorize it by connecting once with a password
 ## Layout
 
 ```
-core/     shared backend (com.hk1.tmuxcore) + vendored xterm.js/fonts
-tv/       TV app (com.hk1.tmuxtv)
-mobile/   phone/tablet app (com.hk1.tmuxmobile)
+core/     shared backend (com.cd4li.tmuxcore) + vendored xterm.js/fonts
+tv/       TV app (com.cd4li.tmuxtv)
+mobile/   phone/tablet app (com.cd4li.tmuxmobile)
 ```

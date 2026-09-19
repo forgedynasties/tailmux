@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.hk1.tmuxmobile"
+    package="com.cd4li.tmuxmobile"
     android:versionCode="1"
     android:versionName="0.1" >
 
@@ -21,7 +21,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false" >
         <activity
-            android:name="com.hk1.tmuxmobile.MainActivity"
+            android:name="com.cd4li.tmuxmobile.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|density"
             android:exported="true"
             android:launchMode="singleTask"

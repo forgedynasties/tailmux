@@ -4,7 +4,7 @@
     "type": "PACKAGED_MANIFESTS",
     "kind": "Directory"
   },
-  "applicationId": "com.hk1.tmuxmobile",
+  "applicationId": "com.cd4li.tmuxmobile",
   "variantName": "debug",
   "elements": [
     {

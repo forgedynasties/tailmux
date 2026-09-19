@@ -1,6 +1,6 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-3    package="com.hk1.tmuxmobile"
+3    package="com.cd4li.tmuxmobile"
 4    android:versionCode="1"
 5    android:versionName="0.1" >
 6
@@ -9,48 +9,48 @@
 9        android:targetSdkVersion="34" />
 10
 11    <uses-permission android:name="android.permission.INTERNET" />
-11-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:4:5-67
-11-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:4:22-64
+11-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:4:5-67
+11-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:4:22-64
 12
 13    <application
-13-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:6:5-26:19
+13-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:6:5-26:19
 14        android:allowBackup="false"
-14-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:7:9-36
+14-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:7:9-36
 15        android:debuggable="true"
 16        android:extractNativeLibs="false"
 17        android:icon="@mipmap/ic_launcher"
-17-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:8:9-43
+17-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:8:9-43
 18        android:label="@string/app_name"
-18-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:10:9-41
+18-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:10:9-41
 19        android:roundIcon="@mipmap/ic_launcher"
-19-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:9:9-48
+19-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:9:9-48
 20        android:supportsRtl="true"
-20-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:11:9-35
+20-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:11:9-35
 21        android:theme="@style/AppTheme"
-21-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:12:9-40
+21-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:12:9-40
 22        android:usesCleartextTraffic="false" >
-22-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:13:9-45
+22-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:13:9-45
 23        <activity
-23-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:15:9-25:20
-24            android:name="com.hk1.tmuxmobile.MainActivity"
-24-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:16:13-41
+23-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:15:9-25:20
+24            android:name="com.cd4li.tmuxmobile.MainActivity"
+24-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:16:13-41
 25            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize|density"
-25-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:17:13-114
+25-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:17:13-114
 26            android:exported="true"
-26-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:18:13-36
+26-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:18:13-36
 27            android:launchMode="singleTask"
-27-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:20:13-44
+27-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:20:13-44
 28            android:windowSoftInputMode="adjustResize" >
-28-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:19:13-55
+28-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:19:13-55
 29            <intent-filter>
-29-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:21:13-24:29
+29-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:21:13-24:29
 30                <action android:name="android.intent.action.MAIN" />
-30-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:22:17-69
-30-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:22:25-66
+30-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:22:17-69
+30-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:22:25-66
 31
 32                <category android:name="android.intent.category.LAUNCHER" />
-32-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:23:17-77
-32-->/home/cd4li/tmux-tv/mobile/src/main/AndroidManifest.xml:23:27-74
+32-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:23:17-77
+32-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:23:27-74
 33            </intent-filter>
 34        </activity>
 35    </application>

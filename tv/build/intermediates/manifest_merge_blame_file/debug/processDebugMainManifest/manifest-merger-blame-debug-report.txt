@@ -1,6 +1,6 @@
 1<?xml version="1.0" encoding="utf-8"?>
 2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-3    package="com.hk1.tmuxtv"
+3    package="com.cd4li.tmuxtv"
 4    android:versionCode="1"
 5    android:versionName="0.1" >
 6
@@ -9,67 +9,67 @@
 9        android:targetSdkVersion="34" />
 10
 11    <uses-permission android:name="android.permission.INTERNET" />
-11-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:4:5-67
-11-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:4:22-64
+11-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:4:5-67
+11-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:4:22-64
 12
 13    <!-- Runs on a TV box; not a touchscreen device -->
 14    <uses-feature
-14-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:7:5-9:36
+14-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:7:5-9:36
 15        android:name="android.software.leanback"
-15-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:8:9-49
+15-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:8:9-49
 16        android:required="false" />
-16-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:9:9-33
+16-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:9:9-33
 17    <uses-feature
-17-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:10:5-12:36
+17-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:10:5-12:36
 18        android:name="android.hardware.touchscreen"
-18-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:11:9-52
+18-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:11:9-52
 19        android:required="false" />
-19-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:12:9-33
+19-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:12:9-33
 20
 21    <application
-21-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:14:5-36:19
+21-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:14:5-36:19
 22        android:allowBackup="false"
-22-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:15:9-36
+22-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:15:9-36
 23        android:banner="@drawable/banner"
-23-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:16:9-42
+23-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:16:9-42
 24        android:debuggable="true"
 25        android:extractNativeLibs="false"
 26        android:icon="@mipmap/ic_launcher"
-26-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:17:9-43
+26-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:17:9-43
 27        android:label="@string/app_name"
-27-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:19:9-41
+27-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:19:9-41
 28        android:roundIcon="@mipmap/ic_launcher"
-28-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:18:9-48
+28-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:18:9-48
 29        android:supportsRtl="false"
-29-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:20:9-36
+29-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:20:9-36
 30        android:theme="@style/AppTheme"
-30-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:21:9-40
+30-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:21:9-40
 31        android:usesCleartextTraffic="false" >
-31-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:22:9-45
+31-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:22:9-45
 32        <activity
-32-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:24:9-35:20
-33            android:name="com.hk1.tmuxtv.MainActivity"
-33-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:25:13-41
+32-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:24:9-35:20
+33            android:name="com.cd4li.tmuxtv.MainActivity"
+33-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:25:13-41
 34            android:configChanges="orientation|screenSize|keyboardHidden|navigation|keyboard|uiMode|density|smallestScreenSize|screenLayout"
-34-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:26:13-141
+34-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:26:13-141
 35            android:exported="true"
-35-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:27:13-36
+35-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:27:13-36
 36            android:launchMode="singleTask"
-36-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:28:13-44
+36-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:28:13-44
 37            android:screenOrientation="landscape" >
-37-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:29:13-50
+37-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:29:13-50
 38            <intent-filter>
-38-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:30:13-34:29
+38-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:30:13-34:29
 39                <action android:name="android.intent.action.MAIN" />
-39-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:31:17-69
-39-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:31:25-66
+39-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:31:17-69
+39-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:31:25-66
 40
 41                <category android:name="android.intent.category.LAUNCHER" />
-41-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:32:17-77
-41-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:32:27-74
+41-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:32:17-77
+41-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:32:27-74
 42                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-42-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:33:17-86
-42-->/home/cd4li/tmux-tv/tv/src/main/AndroidManifest.xml:33:27-83
+42-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:33:17-86
+42-->/home/cd4li/me/projects/tailmux/tv/src/main/AndroidManifest.xml:33:27-83
 43            </intent-filter>
 44        </activity>
 45    </application>

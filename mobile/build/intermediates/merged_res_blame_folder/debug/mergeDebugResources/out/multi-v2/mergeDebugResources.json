@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.hk1.tmuxmobile-debug-5:/values_values.arsc.flat",
+            "outputFile": "com.cd4li.tmuxmobile-debug-5:/values_values.arsc.flat",
             "map": [
                 {
-                    "source": "/home/cd4li/tmux-tv/mobile/src/main/res/values/strings.xml",
+                    "source": "/home/cd4li/me/projects/tailmux/mobile/src/main/res/values/strings.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -14,7 +14,7 @@
                     }
                 },
                 {
-                    "source": "/home/cd4li/tmux-tv/mobile/src/main/res/values/styles.xml",
+                    "source": "/home/cd4li/me/projects/tailmux/mobile/src/main/res/values/styles.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",

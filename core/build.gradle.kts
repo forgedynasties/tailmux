@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.hk1.tmuxcore"
+    namespace = "com.cd4li.tmuxcore"
     compileSdk = 35
     defaultConfig { minSdk = 23 }
     compileOptions {

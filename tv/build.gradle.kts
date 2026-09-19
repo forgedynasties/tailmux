@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.hk1.tmuxtv"
+    namespace = "com.cd4li.tmuxtv"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.hk1.tmuxtv"
+        applicationId = "com.cd4li.tmuxtv"
         minSdk = 23
         targetSdk = 34
         versionCode = 1

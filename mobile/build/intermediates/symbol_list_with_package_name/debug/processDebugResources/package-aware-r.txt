@@ -1,4 +1,4 @@
-com.hk1.tmuxmobile
+com.cd4li.tmuxmobile
 mipmap ic_launcher
 string app_name
 style AppTheme

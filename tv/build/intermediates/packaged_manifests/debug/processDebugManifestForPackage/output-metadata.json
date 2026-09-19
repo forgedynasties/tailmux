@@ -4,7 +4,7 @@
     "type": "PACKAGED_MANIFESTS",
     "kind": "Directory"
   },
-  "applicationId": "com.hk1.tmuxtv",
+  "applicationId": "com.cd4li.tmuxtv",
   "variantName": "debug",
   "elements": [
     {

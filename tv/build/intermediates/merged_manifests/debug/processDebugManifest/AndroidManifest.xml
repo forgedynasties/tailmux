@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.hk1.tmuxtv"
+    package="com.cd4li.tmuxtv"
     android:versionCode="1"
     android:versionName="0.1" >
 
@@ -30,7 +30,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false" >
         <activity
-            android:name="com.hk1.tmuxtv.MainActivity"
+            android:name="com.cd4li.tmuxtv.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden|navigation|keyboard|uiMode|density|smallestScreenSize|screenLayout"
             android:exported="true"
             android:launchMode="singleTask"

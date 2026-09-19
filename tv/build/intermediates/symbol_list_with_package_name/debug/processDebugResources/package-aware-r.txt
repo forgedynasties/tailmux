@@ -1,4 +1,4 @@
-com.hk1.tmuxtv
+com.cd4li.tmuxtv
 drawable banner
 mipmap ic_launcher
 string app_name

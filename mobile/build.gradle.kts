@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.hk1.tmuxmobile"
+    namespace = "com.cd4li.tmuxmobile"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.hk1.tmuxmobile"
+        applicationId = "com.cd4li.tmuxmobile"
         minSdk = 23
         targetSdk = 34
         versionCode = 1

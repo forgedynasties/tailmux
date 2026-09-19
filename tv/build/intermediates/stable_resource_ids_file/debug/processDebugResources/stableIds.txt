@@ -1,4 +1,4 @@
-com.hk1.tmuxtv:style/AppTheme = 0x7f040000
-com.hk1.tmuxtv:mipmap/ic_launcher = 0x7f020000
-com.hk1.tmuxtv:string/app_name = 0x7f030000
-com.hk1.tmuxtv:drawable/banner = 0x7f010000
+com.cd4li.tmuxtv:string/app_name = 0x7f030000
+com.cd4li.tmuxtv:mipmap/ic_launcher = 0x7f020000
+com.cd4li.tmuxtv:style/AppTheme = 0x7f040000
+com.cd4li.tmuxtv:drawable/banner = 0x7f010000
