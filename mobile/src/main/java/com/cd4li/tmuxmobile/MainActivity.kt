@@ -47,6 +47,7 @@ class MainActivity : Activity() {
     private var curUser = ""; private var curIp = ""; private var curPassword: String? = null; private var curName = ""
     private var paneIds = listOf<String>()
     private var activePaneId = ""
+    private var curSession = ""          // the tmux session name (not the host name)
     @Volatile private var copyMode = false
 
     private val PREFIX = byteArrayOf(0x01)   // Ctrl-a
@@ -95,6 +96,13 @@ class MainActivity : Activity() {
         @JavascriptInterface fun paneStep(delta: Int) = ui.post { doPaneStep(delta) }
         @JavascriptInterface fun scroll(lines: Int) = ui.post { doScroll(lines) }
         @JavascriptInterface fun scrollExit() = ui.post { doScrollExit() }
+        @JavascriptInterface fun showKeyboard() = ui.post { showKb() }
+    }
+
+    private fun showKb() {
+        web.requestFocus()
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(web, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
     }
 
     // ---------- panes (one at a time + finder) ----------
@@ -128,13 +136,14 @@ class MainActivity : Activity() {
     private fun doScrollExit() { if (copyMode) { ssh?.send(byteArrayOf('q'.code.toByte())); copyMode = false } }
 
     private fun refreshPanes(zoomIfNeeded: Boolean) {
-        val s = curName; if (s.isEmpty() || curIp.isEmpty()) return
+        val s = curSession; if (s.isEmpty() || curIp.isEmpty()) { Log.i(TAG, "refreshPanes skip session='$s' ip='$curIp'"); return }
         Thread {
             try {
                 val out = SshSession.runCommand(
                     curIp, port, curUser, keyPath(), curPassword,
                     "tmux list-panes -t ${shq(s)} -F '#{pane_id}|#{pane_index}|#{pane_active}|#{pane_current_command}|#{window_zoomed_flag}' 2>/dev/null || true"
                 )
+                Log.i(TAG, "list-panes out=[${out.replace("\n", "\\n")}]")
                 val arr = JSONArray(); val ids = ArrayList<String>(); var active = ""; var zoomed = false
                 for (line in out.lines()) {
                     val p = line.trim().split("|"); if (p.size < 5) continue
@@ -286,6 +295,7 @@ class MainActivity : Activity() {
             id.startsWith("sess:") -> { val n = id.removePrefix("sess:"); "tmux attach -d -t $n || tmux new -s $n" }
             else -> return
         }
+        curSession = if (id.startsWith("sess:")) id.removePrefix("sess:") else ""   // tmux session for the finder
         attach(cmd, if (id.startsWith("sess:")) id.removePrefix("sess:") else curName)
     }
 
@@ -402,11 +412,13 @@ class MainActivity : Activity() {
         val b = when (name) {
             "esc" -> byteArrayOf(ESC)
             "tab" -> byteArrayOf(0x09)
+            "stab" -> byteArrayOf(ESC, '['.code.toByte(), 'Z'.code.toByte())  // Shift+Tab (CSI Z)
             "ctrlc" -> byteArrayOf(0x03)
             "up" -> arrow('A'); "down" -> arrow('B'); "right" -> arrow('C'); "left" -> arrow('D')
             "enter" -> byteArrayOf(0x0d)
             else -> return
         }
+        Log.i(TAG, "key=$name bytes=${b.joinToString(",") { (it.toInt() and 0xff).toString() }}")
         ssh?.send(b)
     }
 

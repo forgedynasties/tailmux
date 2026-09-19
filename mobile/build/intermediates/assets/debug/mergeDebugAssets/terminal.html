@@ -21,13 +21,15 @@
     padding:9px 12px; font:600 14px 'JetBrains Mono',monospace; }
   .tb:active { background:#2a2e46; }
 
-  #term { flex:1; min-height:0; padding:8px 10px; background:var(--bg); }
+  #term { flex:1; min-height:0; padding:8px 10px; background:var(--bg); touch-action:none; }
   .xterm { height:100%; }
   .xterm-viewport::-webkit-scrollbar { width:0; }
 
   #keys { display:flex; gap:6px; padding:6px 8px; overflow-x:auto; background:#13141b; border-top:1px solid #21263c; }
-  #keys button { flex:0 0 auto; min-width:46px; height:40px; border-radius:9px;
-    background:#20233a; color:#c0caf5; border:1px solid #2a2e46; font:600 15px 'JetBrains Mono',monospace; }
+  #keys button { flex:0 0 auto; min-width:46px; height:40px; padding:0 10px; border-radius:9px;
+    background:#20233a; color:#c0caf5; border:1px solid #2a2e46; font:600 14px 'JetBrains Mono',monospace;
+    display:inline-flex; align-items:center; justify-content:center; }
+  #keys button svg { width:20px; height:20px; display:block; }
   #keys button:active { background:var(--accent); color:#0b0f12; }
 
   /* pane finder — shows every pane in the window; tap to jump */
@@ -91,8 +93,10 @@
     <div id="term"></div>
     <div id="finder"></div>
     <div id="keys">
+      <button data-k="__kbd" aria-label="Keyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
       <button data-k="esc">Esc</button>
       <button data-k="tab">Tab</button>
+      <button data-k="stab">S-Tab</button>
       <button data-k="ctrlc">^C</button>
       <button data-k="up">↑</button>
       <button data-k="down">↓</button>
@@ -182,12 +186,16 @@
       var inp=document.getElementById('inp');
       function send(){ var v=inp.value; if(v.length){ try{Bridge.sendLine(v);}catch(e){} } inp.value=''; }
       document.getElementById('btnSend').onclick=send;
-      inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); send(); }});
+      inp.addEventListener('keydown',function(e){ if(e.key==='Enter'){ if(e.cancelable)e.preventDefault(); send(); }});
       document.getElementById('btnMic').onclick=function(){ try{Bridge.voice();}catch(e){} };
       document.getElementById('btnMenu').onclick=function(){ try{Bridge.openActions();}catch(e){} };
       document.getElementById('btnDevices').onclick=function(){ try{Bridge.openDevices();}catch(e){} };
       Array.prototype.forEach.call(document.querySelectorAll('#keys button'),function(b){
-        b.onclick=function(){ try{Bridge.key(b.getAttribute('data-k'));}catch(e){} };
+        b.onclick=function(){
+          var k=b.getAttribute('data-k');
+          if(k==='__kbd'){ inp.focus(); try{Bridge.showKeyboard();}catch(e){} }
+          else try{Bridge.key(k);}catch(e){}
+        };
       });
     }
 
@@ -210,11 +218,11 @@
       function dist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
       function cen(t){return {x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2};}
       el.addEventListener('touchstart',function(e){
-        if(e.touches.length===2){ var c=cen(e.touches); g={d0:dist(e.touches),cx:c.x,cy:c.y,fs0:term.options.fontSize,fired:false}; s1=null; e.preventDefault(); }
+        if(e.touches.length===2){ var c=cen(e.touches); g={d0:dist(e.touches),cx:c.x,cy:c.y,fs0:term.options.fontSize,fired:false}; s1=null; if(e.cancelable)e.preventDefault(); }
         else if(e.touches.length===1){ s1={y:e.touches[0].clientY,moved:false}; }
       },{passive:false});
       el.addEventListener('touchmove',function(e){
-        if(g && e.touches.length===2){ e.preventDefault();
+        if(g && e.touches.length===2){ if(e.cancelable)e.preventDefault();
           var d=dist(e.touches), c=cen(e.touches), dd=d-g.d0, mx=c.x-g.cx, my=c.y-g.cy;
           if(Math.abs(dd)>40 && Math.abs(dd)>Math.hypot(mx,my)){            // pinch -> font
             var ns=Math.max(8,Math.min(40, g.fs0 + Math.round(dd/45)));
@@ -228,7 +236,7 @@
         if(s1 && e.touches.length===1){                                     // one-finger drag -> scroll history
           var y=e.touches[0].clientY, dy=y-s1.y, lh=term.options.fontSize*1.1;
           var lines=Math.trunc(dy/lh);
-          if(lines!==0){ e.preventDefault(); s1.moved=true; try{Bridge.scroll(lines);}catch(_){ } s1.y=y; }
+          if(lines!==0){ if(e.cancelable)e.preventDefault(); s1.moved=true; try{Bridge.scroll(lines);}catch(_){ } s1.y=y; }
         }
       },{passive:false});
       function end(e){
