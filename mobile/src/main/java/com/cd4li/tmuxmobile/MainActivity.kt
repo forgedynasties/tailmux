@@ -45,6 +45,9 @@ class MainActivity : Activity() {
     private var menuMode = ""   // "hosts" | "sessions" | "actions"
     private var hostsByIp = HashMap<String, Host>()
     private var curUser = ""; private var curIp = ""; private var curPassword: String? = null; private var curName = ""
+    private var paneIds = listOf<String>()
+    private var activePaneId = ""
+    @Volatile private var copyMode = false
 
     private val PREFIX = byteArrayOf(0x01)   // Ctrl-a
     private val ESC = 0x1b.toByte()
@@ -88,7 +91,71 @@ class MainActivity : Activity() {
         @JavascriptInterface fun voice() = ui.post { startVoiceInput() }
         @JavascriptInterface fun openActions() = ui.post { showActions() }
         @JavascriptInterface fun openDevices() = ui.post { loadHosts() }
+        @JavascriptInterface fun selectPane(id: String) = ui.post { doSelectPane(id) }
+        @JavascriptInterface fun paneStep(delta: Int) = ui.post { doPaneStep(delta) }
+        @JavascriptInterface fun scroll(lines: Int) = ui.post { doScroll(lines) }
+        @JavascriptInterface fun scrollExit() = ui.post { doScrollExit() }
     }
+
+    // ---------- panes (one at a time + finder) ----------
+    private fun tmuxCmd(cmd: String) =
+        ssh?.send(PREFIX + byteArrayOf(':'.code.toByte()) + cmd.toByteArray(Charsets.UTF_8) + byteArrayOf(0x0d))
+
+    private fun doSelectPane(id: String) {
+        if (copyMode) doScrollExit()
+        tmuxCmd("select-pane -t $id ; resize-pane -Z")   // select unzooms, then re-zoom target
+        activePaneId = id
+        js("API.setActivePane(${q(id)})")
+        ui.postDelayed({ refreshPanes(false) }, 350)
+    }
+
+    private fun doPaneStep(delta: Int) {
+        if (paneIds.isEmpty()) return
+        val pos = paneIds.indexOf(activePaneId).let { if (it < 0) 0 else it }
+        val next = paneIds[((pos + delta) % paneIds.size + paneIds.size) % paneIds.size]
+        doSelectPane(next)
+    }
+
+    private fun doScroll(lines: Int) {
+        if (lines == 0) return
+        if (!copyMode) { ssh?.send(PREFIX + byteArrayOf('['.code.toByte())); copyMode = true }
+        val seq = if (lines > 0) arrow('A') else arrow('B')   // finger down -> older -> Up
+        val buf = java.io.ByteArrayOutputStream()
+        repeat(minOf(kotlin.math.abs(lines), 120)) { buf.write(seq) }
+        ssh?.send(buf.toByteArray())
+    }
+
+    private fun doScrollExit() { if (copyMode) { ssh?.send(byteArrayOf('q'.code.toByte())); copyMode = false } }
+
+    private fun refreshPanes(zoomIfNeeded: Boolean) {
+        val s = curName; if (s.isEmpty() || curIp.isEmpty()) return
+        Thread {
+            try {
+                val out = SshSession.runCommand(
+                    curIp, port, curUser, keyPath(), curPassword,
+                    "tmux list-panes -t ${shq(s)} -F '#{pane_id}|#{pane_index}|#{pane_active}|#{pane_current_command}|#{window_zoomed_flag}' 2>/dev/null || true"
+                )
+                val arr = JSONArray(); val ids = ArrayList<String>(); var active = ""; var zoomed = false
+                for (line in out.lines()) {
+                    val p = line.trim().split("|"); if (p.size < 5) continue
+                    val id = p[0]; if (id.isEmpty()) continue
+                    if (p[2] == "1") active = id
+                    zoomed = p[4] == "1"
+                    ids.add(id)
+                    arr.put(JSONObject().apply {
+                        put("id", id); put("label", p[1]); put("cmd", p[3]); put("active", p[2] == "1")
+                    })
+                }
+                paneIds = ids; if (active.isNotEmpty()) activePaneId = active
+                ui.post {
+                    js("API.setPanes(${q(arr.toString())})")
+                    if (zoomIfNeeded && !zoomed && ids.isNotEmpty()) tmuxCmd("resize-pane -Z")
+                }
+            } catch (e: Throwable) { Log.e(TAG, "list-panes failed", e) }
+        }.start()
+    }
+
+    private fun shq(s: String) = "'" + s.replace("'", "'\\''") + "'"
 
     private fun js(code: String) { ui.post { web.evaluateJavascript(code, null) } }
 
@@ -274,8 +341,9 @@ class MainActivity : Activity() {
     @Volatile private var awaitingFirstBytes = false
     private fun attach(initialCommand: String?, pillName: String) {
         ssh?.close()
-        menuMode = ""
+        menuMode = ""; copyMode = false; paneIds = emptyList(); activePaneId = ""
         js("API.hideMenu()"); js("API.setSession(${q(pillName)})"); js("API.busy(${q("Attaching $pillName …")})")
+        js("API.setPanes('[]')")
         awaitingFirstBytes = true
         ssh = SshSession(
             curIp, port, curUser, keyPath(), curPassword, initialCommand,
@@ -285,6 +353,7 @@ class MainActivity : Activity() {
         ).also { it.connect() }
         ui.postDelayed({ js("API.refit()") }, 400)
         ui.postDelayed({ js("API.refit()") }, 1600)
+        ui.postDelayed({ refreshPanes(true) }, 2000)   // populate finder + zoom to one pane
     }
 
     // ---------- actions sheet ----------
@@ -324,6 +393,7 @@ class MainActivity : Activity() {
 
     // ---------- input ----------
     private fun sendText(text: String, enter: Boolean) {
+        if (copyMode) doScrollExit()
         ssh?.send(text.toByteArray(Charsets.UTF_8))
         if (enter) ssh?.send(byteArrayOf(0x0d))
     }

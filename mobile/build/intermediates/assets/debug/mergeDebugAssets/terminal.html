@@ -30,11 +30,22 @@
     background:#20233a; color:#c0caf5; border:1px solid #2a2e46; font:600 15px 'JetBrains Mono',monospace; }
   #keys button:active { background:var(--accent); color:#0b0f12; }
 
+  /* pane finder — shows every pane in the window; tap to jump */
+  #finder { display:flex; gap:6px; padding:7px 8px; overflow-x:auto; background:#0f1017; border-top:1px solid #21263c; }
+  #finder:empty { display:none; }
+  .pane { flex:0 0 auto; padding:8px 12px; border-radius:9px; background:#1b1d2c; border:1px solid #2a2e46;
+    font:600 13px 'JetBrains Mono',monospace; color:#9aa5ce; white-space:nowrap; }
+  .pane .n { color:#565f89; margin-right:7px; }
+  .pane.active { background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#0b0f12; border-color:transparent; }
+  .pane.active .n { color:#0b0f12; }
+
   #inbar { display:flex; gap:8px; padding:8px 10px calc(8px + env(safe-area-inset-bottom)); background:#0f1017; border-top:1px solid #21263c; }
   #inp { flex:1; min-width:0; background:#1b1d2c; border:1px solid #33467c; border-radius:12px;
     color:var(--fg); font:500 16px 'JetBrains Mono',monospace; padding:12px 14px; }
   #inp:focus { outline:none; border-color:var(--accent); }
-  .ib { width:50px; border:0; border-radius:12px; font-size:20px; color:#0b0f12; }
+  .ib { width:50px; border:0; border-radius:12px; color:#0b0f12;
+    display:flex; align-items:center; justify-content:center; }
+  .ib svg { width:22px; height:22px; }
   #btnMic { background:#e0af68; }
   #btnSend { background:linear-gradient(90deg,var(--accent),var(--accent2)); }
   .ib:active { filter:brightness(.9); }
@@ -78,6 +89,7 @@
       <button class="tb" id="btnDevices">Devices</button>
     </div>
     <div id="term"></div>
+    <div id="finder"></div>
     <div id="keys">
       <button data-k="esc">Esc</button>
       <button data-k="tab">Tab</button>
@@ -91,8 +103,12 @@
       <input id="inp" placeholder="type a command / message…" autocomplete="off"
              autocapitalize="off" autocorrect="off" spellcheck="false"
              enterkeyhint="send">
-      <button class="ib" id="btnMic">🎤</button>
-      <button class="ib" id="btnSend">⏎</button>
+      <button class="ib" id="btnMic" aria-label="Voice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <button class="ib" id="btnSend" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg>
+      </button>
     </div>
   </div>
 
@@ -143,7 +159,23 @@
       busy:function(m){ var b=document.getElementById('busy'); b.classList.remove('err'); b.classList.add('show'); document.getElementById('busyMsg').textContent=m; },
       error:function(m){ var b=document.getElementById('busy'); b.classList.add('err','show'); document.getElementById('busyMsg').textContent=m; },
       idle:function(){ document.getElementById('busy').classList.remove('show'); },
-      focusInput:function(){ document.getElementById('inp').focus(); }
+      focusInput:function(){ document.getElementById('inp').focus(); },
+      setPanes:function(json){
+        var panes=JSON.parse(json), f=document.getElementById('finder'); f.innerHTML='';
+        panes.forEach(function(p){
+          var el=document.createElement('div'); el.className='pane'+(p.active?' active':''); el.dataset.id=p.id;
+          el.innerHTML='<span class="n">'+p.label+'</span>'+(p.cmd||'');
+          el.onclick=function(){ try{Bridge.selectPane(p.id);}catch(e){} };
+          f.appendChild(el);
+          if(p.active && el.scrollIntoView) el.scrollIntoView({inline:'center',block:'nearest'});
+        });
+      },
+      setActivePane:function(id){
+        Array.prototype.forEach.call(document.querySelectorAll('#finder .pane'),function(el){
+          var on=el.dataset.id===String(id); el.classList.toggle('active',on);
+          if(on && el.scrollIntoView) el.scrollIntoView({inline:'center',block:'nearest'});
+        });
+      }
     };
 
     function wire(){
@@ -168,7 +200,43 @@
       term.onData(function(d){ try{Bridge.input(d);}catch(e){} });
       window.addEventListener('resize',doFit);
       wire();
+      gestures();
       try{ Bridge.ready(); }catch(e){}
+    }
+
+    function gestures(){
+      var el=document.getElementById('term');
+      var g=null, s1=null;
+      function dist(t){return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}
+      function cen(t){return {x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2};}
+      el.addEventListener('touchstart',function(e){
+        if(e.touches.length===2){ var c=cen(e.touches); g={d0:dist(e.touches),cx:c.x,cy:c.y,fs0:term.options.fontSize,fired:false}; s1=null; e.preventDefault(); }
+        else if(e.touches.length===1){ s1={y:e.touches[0].clientY,moved:false}; }
+      },{passive:false});
+      el.addEventListener('touchmove',function(e){
+        if(g && e.touches.length===2){ e.preventDefault();
+          var d=dist(e.touches), c=cen(e.touches), dd=d-g.d0, mx=c.x-g.cx, my=c.y-g.cy;
+          if(Math.abs(dd)>40 && Math.abs(dd)>Math.hypot(mx,my)){            // pinch -> font
+            var ns=Math.max(8,Math.min(40, g.fs0 + Math.round(dd/45)));
+            if(ns!==term.options.fontSize){ term.options.fontSize=ns; try{fit.fit();}catch(_){ } reportSize(); }
+          } else if(!g.fired && Math.hypot(mx,my)>70){                       // two-finger drag -> switch pane
+            var delta=(Math.abs(mx)>Math.abs(my)) ? (mx>0?1:-1) : (my>0?1:-1);
+            try{Bridge.paneStep(delta);}catch(_){ } g.fired=true;
+          }
+          return;
+        }
+        if(s1 && e.touches.length===1){                                     // one-finger drag -> scroll history
+          var y=e.touches[0].clientY, dy=y-s1.y, lh=term.options.fontSize*1.1;
+          var lines=Math.trunc(dy/lh);
+          if(lines!==0){ e.preventDefault(); s1.moved=true; try{Bridge.scroll(lines);}catch(_){ } s1.y=y; }
+        }
+      },{passive:false});
+      function end(e){
+        if(s1 && !s1.moved && e.touches.length===0){ try{Bridge.scrollExit();}catch(_){ } }
+        if(e.touches.length<2) g=null;
+        if(e.touches.length===0) s1=null;
+      }
+      el.addEventListener('touchend',end); el.addEventListener('touchcancel',end);
     }
     if(document.fonts&&document.fonts.load){
       Promise.all([document.fonts.load('400 15px "JetBrains Mono"'),document.fonts.load('700 15px "JetBrains Mono"')]).then(boot).catch(boot);
