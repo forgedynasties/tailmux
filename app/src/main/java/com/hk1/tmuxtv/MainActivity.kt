@@ -269,16 +269,24 @@ class MainActivity : Activity() {
         phase = Phase.SESSIONS
         curUser = user; curIp = ip; curPassword = password; curName = name
         val arr = JSONArray()
+        var count = 0
         for (line in tmuxLs.lines()) {
             val s = line.trim()
             if (s.isEmpty() || !s.contains(":")) continue
             val sName = s.substringBefore(":")
             val rest = s.substringAfter(":").trim()
+            count++
             arr.put(JSONObject().apply {
                 put("id", "sess:$sName"); put("label", sName)
                 put("sub", rest); put("ico", "▪")
             })
         }
+        // Server not running (e.g. after reboot): offer to boot it so tmux-continuum
+        // auto-restore kicks in, then re-list the restored sessions.
+        if (count == 0) arr.put(JSONObject().apply {
+            put("id", "start"); put("label", "Start tmux")
+            put("sub", "server down — boot & restore"); put("ico", "⏻")
+        })
         arr.put(JSONObject().apply { put("id", "new"); put("label", "New session"); put("ico", "＋") })
         arr.put(JSONObject().apply {
             put("id", "shell"); put("label", "Plain shell"); put("sub", "no tmux"); put("ico", "▸")
@@ -287,6 +295,7 @@ class MainActivity : Activity() {
     }
 
     private fun onSessionChosen(id: String) {
+        if (id == "start") { startTmux(); return }
         val cmd = when {
             id == "shell" -> null
             id == "new" -> "exec tmux new"
@@ -297,6 +306,27 @@ class MainActivity : Activity() {
             else -> return
         }
         attach(cmd, if (id.startsWith("sess:")) id.removePrefix("sess:") else curName)
+    }
+
+    /** Boot the tmux server so continuum auto-restore runs, then re-list. */
+    private fun startTmux() {
+        js("API.busy(${q("Starting tmux — restoring sessions …")})")
+        Thread {
+            try {
+                val out = SshSession.runCommand(
+                    curIp, port, curUser, keyPath(), curPassword,
+                    "tmux new-session -d 2>/dev/null; sleep 3; tmux ls 2>/dev/null || true",
+                    timeoutMs = 15000
+                )
+                ui.post { js("API.idle()"); showSessions(curUser, curIp, curName, curPassword, out) }
+            } catch (e: Throwable) {
+                Log.e(TAG, "start tmux failed", e)
+                ui.post {
+                    js("API.error(${q("Couldn't start tmux: " + (e.message ?: "").take(60))})")
+                    ui.postDelayed({ js("API.idle()") }, 3000)
+                }
+            }
+        }.start()
     }
 
     // ---------- attach an interactive session ----------
