@@ -22,6 +22,7 @@ import android.webkit.WebView
 import android.widget.EditText
 import android.widget.FrameLayout
 import com.hk1.tmuxcore.Host
+import com.hk1.tmuxcore.Net
 import com.hk1.tmuxcore.PairServer
 import com.hk1.tmuxcore.QrGen
 import com.hk1.tmuxcore.SecretStore
@@ -75,6 +76,30 @@ class MainActivity : Activity() {
     }
     private fun loadPw(ip: String, user: String): String? =
         prefs.getString(pwKey(ip, user), null)?.let { SecretStore.decrypt(it) }
+
+    /** Warn (instead of a 15s timeout) when the target needs Tailscale but it's not up. */
+    private fun tailscaleReady(ip: String): Boolean {
+        if (!Net.isTailscaleIp(ip) || Net.tailscaleUp()) return true
+        val installed = try { packageManager.getPackageInfo("com.tailscale.ipn", 0); true } catch (_: Exception) { false }
+        val ctx = ContextThemeWrapper(this, android.R.style.Theme_Material_Dialog_Alert)
+        AlertDialog.Builder(ctx)
+            .setTitle("Tailscale not connected")
+            .setMessage(
+                "This device isn't on your tailnet, so it can't reach $ip.\n\n" +
+                    if (installed) "Open Tailscale and connect, then try again."
+                    else "Install Tailscale and sign in, then try again."
+            )
+            .setPositiveButton(if (installed) "Open Tailscale" else "Get Tailscale") { _, _ ->
+                try {
+                    val i = if (installed) packageManager.getLaunchIntentForPackage("com.tailscale.ipn")
+                    else Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.tailscale.ipn"))
+                    if (i != null) startActivity(i)
+                } catch (_: Exception) {}
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+        return false
+    }
 
     /** ssh-copy-id: install our public key on the host so later logins use key auth. */
     private fun copyKeyToHost(ip: String, p: Int, user: String, password: String) {
@@ -272,6 +297,7 @@ class MainActivity : Activity() {
 
     // ---------- list tmux sessions on a host ----------
     private fun listSessions(user: String, ip: String, name: String, password: String?, p: Int = port) {
+        if (!tailscaleReady(ip)) return
         js("API.busy(${q("Connecting to $user@$ip …")})")
         Thread {
             try {
