@@ -128,6 +128,30 @@ class SshSession(
     }
 
     companion object {
+        /** Generate an ed25519 keypair at [keyPath] if none exists yet, so the app
+         * can install it via ssh-copy-id. Returns true if a key is present after. */
+        fun ensureKey(keyPath: String, comment: String = "tmuxtv"): Boolean {
+            val f = File(keyPath)
+            if (f.exists() && f.length() > 0L) return true
+            return try {
+                ensureEd25519Provider()
+                // JSch can't generate ed25519; ECDSA P-256 is short, modern and works on Android.
+                val kp = com.jcraft.jsch.KeyPair.genKeyPair(JSch(), com.jcraft.jsch.KeyPair.ECDSA, 256)
+                f.parentFile?.mkdirs()
+                kp.writePrivateKey(keyPath)
+                kp.writePublicKey("$keyPath.pub", comment)
+                kp.dispose()
+                f.setReadable(false, false); f.setReadable(true, true)
+                f.setWritable(false, false); f.setWritable(true, true)
+                Log.i(TAG, "generated ECDSA key at $keyPath")
+                true
+            } catch (e: Throwable) {
+                Log.e(TAG, "keygen failed", e)
+                try { f.delete() } catch (_: Throwable) {}
+                false
+            }
+        }
+
         /** The OpenSSH public-key line ("ssh-ed25519 AAAA… comment") for a private key. */
         fun publicKeyLine(keyPath: String, comment: String = "tmuxtv"): String? = try {
             ensureEd25519Provider()

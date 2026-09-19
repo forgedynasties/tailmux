@@ -59,7 +59,7 @@ class MainActivity : Activity() {
     private val RIGHT = arrow('C'); private val LEFT = arrow('D')
 
     private fun keyPath(): String? =
-        File(filesDir, "id_ed25519").let { if (it.exists()) it.absolutePath else null }
+        File(filesDir, "id_ed25519").let { if (it.exists() && it.length() > 0) it.absolutePath else null }
 
     // remembered SSH passwords (encrypted via the Android Keystore)
     private fun pwKey(ip: String, user: String) = "pw_${ip}_$user"
@@ -109,6 +109,8 @@ class MainActivity : Activity() {
         }
         web.addJavascriptInterface(Bridge(), "Bridge")
         setContentView(web)
+        // make sure we have a key to offer via ssh-copy-id (generate on first run)
+        Thread { SshSession.ensureKey(File(filesDir, "id_ed25519").absolutePath) }.start()
         web.loadUrl("file:///android_asset/terminal.html")
     }
 
