@@ -23,21 +23,21 @@
 tailnet, pick a device, and attach a session — with a D-pad on the TV or your thumbs on a phone.
 No port-forwarding, no bastion, no fiddly SSH configs.
 
-## ✨ Features
+## Features
 
-- 🔑 **Zero-config auth** — generates its own SSH key on first launch, `ssh-copy-id`s it on the
+- **Zero-config auth** — generates its own SSH key on first launch, `ssh-copy-id`s it on the
   first password login, then it's key-based forever. Username + password remembered per host
   (password encrypted with the Android Keystore).
-- 🌐 **Tailnet-native** — enumerates your devices straight from the Tailscale API. No hard-coded
+- **Tailnet-native** — enumerates your devices straight from the Tailscale API. No hard-coded
   hub; online devices are flagged live. Manual `user@ip[:port]` too.
-- 📺 **Made for the remote** — D-pad moves the active pane, OK zooms it, media keys resize the font.
-- 📱 **Made for touch** — tappable device cards, an input bar, and 🎤 voice dictation into the pane.
-- ♻️ **Server down? One tap** — boots tmux so [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum)
+- **Made for the remote** — D-pad moves the active pane, OK zooms it, media keys resize the font.
+- **Made for touch** — tappable device cards, an input bar, and voice dictation into the pane.
+- **Server down? One tap** — boots tmux so [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum)
   auto-restore brings your sessions back, then lists them.
-- 🎨 **Riced by default** — xterm.js, Tokyo Night palette, JetBrains Mono, tuned for TV overscan.
-- 🔒 **Self-contained** — QR-based token pairing; nothing leaves your tailnet.
+- **Riced by default** — xterm.js, Tokyo Night palette, JetBrains Mono, tuned for TV overscan.
+- **Self-contained** — QR-based token pairing; nothing leaves your tailnet.
 
-## 📦 The apps
+## The apps
 
 | Module | Package | Built for |
 |--------|---------|-----------|
@@ -45,7 +45,7 @@ No port-forwarding, no bastion, no fiddly SSH configs.
 | **`:tv`** | `com.cd4li.tmuxtv` | Android **TV** — D-pad, leanback launcher. |
 | **`:mobile`** | `com.cd4li.tmuxmobile` | **Phone / tablet** — touch, input bar, voice. |
 
-## 🚀 Getting started
+## Getting started
 
 1. **Install Tailscale** on every device — the TV box, your phone, and the machines you want to
    reach — and sign in so they share a tailnet.
@@ -59,30 +59,30 @@ No port-forwarding, no bastion, no fiddly SSH configs.
    (tailmux `ssh-copy-id`s it for you).
 7. **Choose a session** — or *New session* / *Plain shell*. Server down? Pick **Start tmux**.
 
-## 🎮 Controls
+## Controls
 
 | | TV (D-pad) | Mobile (touch) |
 |---|---|---|
-| **Move active pane** | ▲ ▼ ◀ ▶ | ☰ → pane |
-| **Zoom pane** | OK | ☰ → zoom |
-| **Font size** | media ◀ ◀ / ▶ ▶ | pinch / `A±` |
-| **Text in** | popup → Voice / Type | input bar + ⏎ · 🎤 voice |
-| **Menu** | BACK / MENU | ☰ · Devices |
+| **Move active pane** | Arrows | Menu &rarr; pane |
+| **Zoom pane** | OK | Menu &rarr; zoom |
+| **Font size** | media prev / next | pinch / `A±` |
+| **Text in** | popup &rarr; Voice / Type | input bar + Enter, or voice |
+| **Menu** | BACK / MENU | Menu / Devices |
 
 > tmux prefix is `Ctrl-a`.
 
-## 🛠 Build
+## Build
 
 Requires the Android SDK (platform 35, build-tools 35) and JDK 17.
 
 ```sh
-./gradlew :tv:assembleDebug        # TV apk    → tv/build/outputs/apk/debug/tv-debug.apk
-./gradlew :mobile:assembleDebug    # phone apk → mobile/build/outputs/apk/debug/mobile-debug.apk
+./gradlew :tv:assembleDebug        # TV apk    -> tv/build/outputs/apk/debug/tv-debug.apk
+./gradlew :mobile:assembleDebug    # phone apk -> mobile/build/outputs/apk/debug/mobile-debug.apk
 ```
 
 Both install side by side (distinct applicationIds).
 
-## 🧩 How it works
+## How it works
 
 The terminal is [xterm.js](https://xtermjs.org) in a WebView; native code owns all input and pumps
 SSH bytes to it, so the remote/touch surface drives everything. SSH is [mwiede/jsch](https://github.com/mwiede/jsch)
@@ -95,7 +95,7 @@ tv/       TV app       (com.cd4li.tmuxtv)
 mobile/   phone/tablet (com.cd4li.tmuxmobile)
 ```
 
-## 📝 Notes
+## Notes
 
 - Online status is derived from each device's `lastSeen` (< 5 min).
 - Token pairing serves a form over HTTP on the LAN — keep it to a trusted network.
