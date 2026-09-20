@@ -50,7 +50,6 @@ class MainActivity : Activity() {
     private var curSession = ""          // the tmux session name (not the host name)
     @Volatile private var copyMode = false
 
-    private val PREFIX = byteArrayOf(0x01)   // Ctrl-a
     private val ESC = 0x1b.toByte()
     private fun arrow(c: Char) = byteArrayOf(ESC, '['.code.toByte(), c.code.toByte())
 
@@ -106,15 +105,16 @@ class MainActivity : Activity() {
     }
 
     // ---------- panes (one at a time + finder) ----------
-    private fun tmuxCmd(cmd: String) =
-        ssh?.send(PREFIX + byteArrayOf(':'.code.toByte()) + cmd.toByteArray(Charsets.UTF_8) + byteArrayOf(0x0d))
+    // All tmux control goes over a separate exec channel — never through the
+    // interactive pane — so it's independent of the tmux prefix and can't leak.
 
     private fun doSelectPane(id: String) {
         if (copyMode) doScrollExit()
-        tmuxCmd("select-pane -t $id ; resize-pane -Z")   // select unzooms, then re-zoom target
+        // select-pane unzooms if the window was zoomed; then zoom the target
+        ssh?.exec("tmux select-pane -t $id \\; resize-pane -Z -t $id")
         activePaneId = id
         js("API.setActivePane(${q(id)})")
-        ui.postDelayed({ refreshPanes(false) }, 350)
+        ui.postDelayed({ refreshPanes(false) }, 400)
     }
 
     private fun doPaneStep(delta: Int) {
@@ -124,16 +124,27 @@ class MainActivity : Activity() {
         doSelectPane(next)
     }
 
+    // scrolling drives tmux copy-mode server-side, debounced so rapid drags
+    // coalesce into one exec instead of flooding the connection
+    private var pendingScroll = 0
+    private val scrollFlush = Runnable {
+        val n = pendingScroll; pendingScroll = 0
+        if (n == 0 || activePaneId.isEmpty()) return@Runnable
+        copyMode = true
+        val dir = if (n > 0) "scroll-up" else "scroll-down"
+        ssh?.exec("tmux copy-mode -t $activePaneId \\; send-keys -t $activePaneId -X -N ${minOf(kotlin.math.abs(n), 300)} $dir")
+    }
     private fun doScroll(lines: Int) {
         if (lines == 0) return
-        if (!copyMode) { ssh?.send(PREFIX + byteArrayOf('['.code.toByte())); copyMode = true }
-        val seq = if (lines > 0) arrow('A') else arrow('B')   // finger down -> older -> Up
-        val buf = java.io.ByteArrayOutputStream()
-        repeat(minOf(kotlin.math.abs(lines), 120)) { buf.write(seq) }
-        ssh?.send(buf.toByteArray())
+        pendingScroll += lines
+        ui.removeCallbacks(scrollFlush)
+        ui.postDelayed(scrollFlush, 55)
     }
-
-    private fun doScrollExit() { if (copyMode) { ssh?.send(byteArrayOf('q'.code.toByte())); copyMode = false } }
+    private fun doScrollExit() {
+        ui.removeCallbacks(scrollFlush); pendingScroll = 0
+        if (copyMode && activePaneId.isNotEmpty()) ssh?.exec("tmux send-keys -t $activePaneId -X cancel")
+        copyMode = false
+    }
 
     private fun refreshPanes(zoomIfNeeded: Boolean) {
         val s = curSession; if (s.isEmpty() || curIp.isEmpty()) { Log.i(TAG, "refreshPanes skip session='$s' ip='$curIp'"); return }
@@ -173,7 +184,8 @@ class MainActivity : Activity() {
                 paneIds = ids; if (active.isNotEmpty()) activePaneId = active
                 ui.post {
                     js("API.setPanes(${q(obj.toString())})")
-                    if (zoomIfNeeded && !zoomed && ids.size > 1) tmuxCmd("resize-pane -Z")
+                    if (zoomIfNeeded && !zoomed && ids.size > 1 && active.isNotEmpty())
+                        ssh?.exec("tmux resize-pane -Z -t $active")
                 }
             } catch (e: Throwable) { Log.e(TAG, "refreshPanes failed", e) }
         }.start()
@@ -405,13 +417,13 @@ class MainActivity : Activity() {
 
     private fun onActionChosen(id: String) {
         when (id) {
-            "resume" -> { menuMode = ""; js("API.hideMenu()") }
-            "apane" -> { ssh?.send(PREFIX + byteArrayOf('o'.code.toByte())); resume() }
-            "azoom" -> { ssh?.send(PREFIX + byteArrayOf('z'.code.toByte())); resume() }
-            "awnext" -> { ssh?.send(PREFIX + byteArrayOf('n'.code.toByte())); resume() }
-            "awprev" -> { ssh?.send(PREFIX + byteArrayOf('p'.code.toByte())); resume() }
+            "resume" -> resume()
+            "apane" -> { resume(); doPaneStep(1) }
+            "azoom" -> { resume(); if (activePaneId.isNotEmpty()) ssh?.exec("tmux resize-pane -Z -t $activePaneId") }
+            "awnext" -> { resume(); ssh?.exec("tmux next-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 300) }
+            "awprev" -> { resume(); ssh?.exec("tmux previous-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 300) }
             "sessions" -> { js("API.hideMenu()"); listSessions(curUser, curIp, curName, curPassword) }
-            "detach" -> { ssh?.send(PREFIX + byteArrayOf('d'.code.toByte())); ui.postDelayed({ listSessions(curUser, curIp, curName, curPassword) }, 300) }
+            "detach" -> { js("API.hideMenu()"); ssh?.close(); ssh = null; listSessions(curUser, curIp, curName, curPassword) }
         }
     }
     private fun resume() { menuMode = ""; js("API.hideMenu()") }

@@ -105,6 +105,29 @@ class SshSession(
 
     private fun write(s: String) = send(s.toByteArray(Charsets.UTF_8))
 
+    /**
+     * Run a one-shot command on this live connection via a fresh exec channel
+     * (reuses the existing auth — no new TCP/handshake). Used to drive tmux
+     * server-side (select-pane, copy-mode, …) so control never goes through the
+     * interactive pane and is independent of the user's tmux prefix.
+     */
+    fun exec(cmd: String) {
+        val s = session ?: return
+        writer.execute {
+            try {
+                val ch = s.openChannel("exec") as ChannelExec
+                ch.setCommand(cmd)
+                ch.setPty(false)
+                val ins = ch.inputStream
+                ch.connect(6000)
+                val buf = ByteArray(2048)
+                while (ins.read(buf) >= 0) { /* drain */ }
+                ch.disconnect()
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
     fun resize(newCols: Int, newRows: Int) {
         if (newCols <= 0 || newRows <= 0) return
         cols = newCols
