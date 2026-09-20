@@ -21,7 +21,7 @@
     padding:9px 12px; font:600 14px 'JetBrains Mono',monospace; }
   .tb:active { background:#2a2e46; }
 
-  #term { flex:1; min-height:0; padding:8px 10px; background:var(--bg); touch-action:none; }
+  #term { flex:1; min-height:0; padding:8px 10px; background:var(--bg); touch-action:none; position:relative; }
   .xterm { height:100%; }
   .xterm-viewport::-webkit-scrollbar { width:0; }
 
@@ -32,11 +32,20 @@
   #keys button svg { width:20px; height:20px; display:block; }
   #keys button:active { background:var(--accent); color:#0b0f12; }
 
-  /* pane finder — a mini-map of the window's pane layout; tap a pane to jump */
-  #finder { padding:8px; background:#0f1017; border-top:1px solid #21263c; display:flex; justify-content:center; }
-  #finder:empty { display:none; }
-  #map { position:relative; height:92px; background:#12131a; border:1px solid #2a2e46; border-radius:8px; }
-  .pv { position:absolute; box-sizing:border-box; border:1px solid #2a2e46; border-radius:4px; background:#1b1d2c;
+  /* finder — translucent overlay at the bottom of the terminal: window pills + pane map */
+  #finder { position:absolute; left:0; right:0; bottom:0; z-index:6; display:none;
+    flex-direction:column; align-items:center; gap:6px; padding:7px 8px calc(7px + env(safe-area-inset-bottom));
+    background:rgba(13,14,20,0.42); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+    border-top:1px solid rgba(122,162,247,0.14); }
+  #finder.show { display:flex; }
+  #winbar { display:flex; gap:6px; overflow-x:auto; max-width:100%; }
+  .win { flex:0 0 auto; padding:5px 10px; border-radius:8px; background:rgba(27,29,44,0.72); border:1px solid #2a2e46;
+    font:600 12px/1 'JetBrains Mono',monospace; color:#9aa5ce; white-space:nowrap; }
+  .win .wn { color:#565f89; margin-right:5px; }
+  .win.active { background:linear-gradient(90deg,var(--accent),var(--accent2)); color:#0b0f12; border-color:transparent; }
+  .win.active .wn { color:#0b0f12; }
+  #map { position:relative; height:70px; background:rgba(18,19,26,0.55); border:1px solid #2a2e46; border-radius:8px; }
+  .pv { position:absolute; box-sizing:border-box; border:1px solid #2a2e46; border-radius:4px; background:rgba(27,29,44,0.8);
     font:600 11px/1.1 'JetBrains Mono',monospace; color:#8b93bd; overflow:hidden;
     display:flex; align-items:center; justify-content:center; text-align:center; padding:1px; margin:1px; }
   .pv.active { background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#0b0f12; border-color:transparent; }
@@ -90,8 +99,9 @@
       <div id="title">▸ <b id="titleName">—</b></div>
       <button class="tb" id="btnDevices">Devices</button>
     </div>
-    <div id="term"></div>
-    <div id="finder"></div>
+    <div id="term">
+      <div id="finder"><div id="winbar"></div><div id="mapwrap"></div></div>
+    </div>
     <div id="keys">
       <button data-k="__kbd" aria-label="Keyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
       <button data-k="esc">Esc</button>
@@ -164,22 +174,35 @@
       error:function(m){ var b=document.getElementById('busy'); b.classList.add('err','show'); document.getElementById('busyMsg').textContent=m; },
       idle:function(){ document.getElementById('busy').classList.remove('show'); },
       focusInput:function(){ document.getElementById('inp').focus(); },
-      setPanes:function(json){
-        var d=JSON.parse(json), f=document.getElementById('finder'); f.innerHTML='';
-        if(!d.panes||!d.panes.length) return;
-        var W=d.w||1, H=d.h||1, mapH=92;
-        var mapW=Math.max(90, Math.min(320, Math.round(mapH*(W*0.5)/H)));  // cells ~1w:2h
-        var map=document.createElement('div'); map.id='map';
-        map.style.width=mapW+'px'; map.style.height=mapH+'px';
-        d.panes.forEach(function(p){
-          var el=document.createElement('div'); el.className='pv'+(p.active?' active':''); el.dataset.id=p.id;
-          el.style.left=(100*p.x/W)+'%'; el.style.top=(100*p.y/H)+'%';
-          el.style.width=(100*p.pw/W)+'%'; el.style.height=(100*p.ph/H)+'%';
-          el.textContent=p.cmd||p.label;
-          el.onclick=function(){ try{Bridge.selectPane(p.id);}catch(e){} };
-          map.appendChild(el);
+      setLayout:function(json){
+        var d=JSON.parse(json);
+        var f=document.getElementById('finder');
+        var wb=document.getElementById('winbar'); wb.innerHTML='';
+        var mw=document.getElementById('mapwrap'); mw.innerHTML='';
+        if(!d.windows||!d.windows.length){ f.classList.remove('show'); return; }
+        f.classList.add('show');
+        d.windows.forEach(function(w){
+          var el=document.createElement('div'); el.className='win'+(w.active?' active':''); el.dataset.idx=w.idx;
+          el.innerHTML='<span class="wn">'+w.idx+'</span>'+(w.name||'');
+          el.onclick=function(){ try{Bridge.selectWindow(w.idx);}catch(e){} };
+          wb.appendChild(el);
+          if(w.active && el.scrollIntoView) el.scrollIntoView({inline:'center',block:'nearest'});
         });
-        f.appendChild(map);
+        if(d.panes&&d.panes.length){
+          var W=d.w||1, H=d.h||1, mapH=70;
+          var mapW=Math.max(90, Math.min(300, Math.round(mapH*(W*0.5)/H)));  // cells ~1w:2h
+          var map=document.createElement('div'); map.id='map';
+          map.style.width=mapW+'px'; map.style.height=mapH+'px';
+          d.panes.forEach(function(p){
+            var el=document.createElement('div'); el.className='pv'+(p.active?' active':''); el.dataset.id=p.id;
+            el.style.left=(100*p.x/W)+'%'; el.style.top=(100*p.y/H)+'%';
+            el.style.width=(100*p.pw/W)+'%'; el.style.height=(100*p.ph/H)+'%';
+            el.textContent=p.cmd||p.label;
+            el.onclick=function(){ try{Bridge.selectPane(p.id);}catch(e){} };
+            map.appendChild(el);
+          });
+          mw.appendChild(map);
+        }
       },
       setActivePane:function(id){
         Array.prototype.forEach.call(document.querySelectorAll('#finder .pv'),function(el){

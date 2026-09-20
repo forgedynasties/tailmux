@@ -92,6 +92,7 @@ class MainActivity : Activity() {
         @JavascriptInterface fun openActions() = ui.post { showActions() }
         @JavascriptInterface fun openDevices() = ui.post { loadHosts() }
         @JavascriptInterface fun selectPane(id: String) = ui.post { doSelectPane(id) }
+        @JavascriptInterface fun selectWindow(idx: String) = ui.post { doSelectWindow(idx) }
         @JavascriptInterface fun paneStep(delta: Int) = ui.post { doPaneStep(delta) }
         @JavascriptInterface fun scroll(lines: Int) = ui.post { doScroll(lines) }
         @JavascriptInterface fun scrollExit() = ui.post { doScrollExit() }
@@ -115,6 +116,12 @@ class MainActivity : Activity() {
         activePaneId = id
         js("API.setActivePane(${q(id)})")
         ui.postDelayed({ refreshPanes(false) }, 400)
+    }
+
+    private fun doSelectWindow(idx: String) {
+        if (copyMode) doScrollExit()
+        ssh?.exec("tmux select-window -t ${shq(curSession)}:$idx")
+        ui.postDelayed({ refreshPanes(true) }, 300)
     }
 
     private fun doPaneStep(delta: Int) {
@@ -150,15 +157,21 @@ class MainActivity : Activity() {
         val s = curSession; if (s.isEmpty() || curIp.isEmpty()) { Log.i(TAG, "refreshPanes skip session='$s' ip='$curIp'"); return }
         Thread {
             try {
-                // window_layout carries the tiled geometry (unaffected by zoom); list-panes gives id/active/cmd
+                // windows + the active window's tiled geometry (unaffected by zoom) + panes
                 val out = SshSession.runCommand(
                     curIp, port, curUser, keyPath(), curPassword,
-                    "tmux display-message -p -t ${shq(s)} '#{window_zoomed_flag}|#{window_layout}'; echo '::'; " +
+                    "tmux list-windows -t ${shq(s)} -F '#{window_index}|#{window_name}|#{window_active}'; echo '::'; " +
+                        "tmux display-message -p -t ${shq(s)} '#{window_zoomed_flag}|#{window_layout}'; echo '::'; " +
                         "tmux list-panes -t ${shq(s)} -F '#{pane_id}|#{pane_index}|#{pane_active}|#{pane_current_command}'"
                 )
-                Log.i(TAG, "panes out=[${out.replace("\n", "\\n")}]")
+                Log.i(TAG, "layout out=[${out.replace("\n", "\\n")}]")
                 val chunks = out.split("::")
-                val head = chunks.getOrNull(0)?.trim().orEmpty()
+                val windows = JSONArray()
+                for (line in (chunks.getOrNull(0) ?: "").lines()) {
+                    val w = line.trim().split("|"); if (w.size < 3) continue
+                    windows.put(JSONObject().apply { put("idx", w[0]); put("name", w[1]); put("active", w[2] == "1") })
+                }
+                val head = chunks.getOrNull(1)?.trim().orEmpty()
                 val zoomed = head.substringBefore("|") == "1"
                 val layout = head.substringAfter("|", "")
                 val W = Regex("""^[0-9a-f]+,(\d+)x(\d+)""").find(layout)?.groupValues?.get(1)?.toIntOrNull() ?: 0
@@ -170,7 +183,7 @@ class MainActivity : Activity() {
                     geo[pn] = intArrayOf(x.toInt(), y.toInt(), w.toInt(), h.toInt())
                 }
                 val panes = JSONArray(); val ids = ArrayList<String>(); var active = ""
-                for (line in (chunks.getOrNull(1) ?: "").lines()) {
+                for (line in (chunks.getOrNull(2) ?: "").lines()) {
                     val p = line.trim().split("|"); if (p.size < 4) continue
                     val id = p[0]; if (id.isEmpty()) continue
                     val g = geo[id.removePrefix("%")] ?: continue
@@ -180,12 +193,15 @@ class MainActivity : Activity() {
                         put("x", g[0]); put("y", g[1]); put("pw", g[2]); put("ph", g[3])
                     })
                 }
-                val obj = JSONObject().apply { put("w", W); put("h", H); put("panes", panes) }
+                val obj = JSONObject().apply { put("windows", windows); put("w", W); put("h", H); put("panes", panes) }
                 paneIds = ids; if (active.isNotEmpty()) activePaneId = active
                 ui.post {
-                    js("API.setPanes(${q(obj.toString())})")
-                    if (zoomIfNeeded && !zoomed && ids.size > 1 && active.isNotEmpty())
-                        ssh?.exec("tmux resize-pane -Z -t $active")
+                    js("API.setLayout(${q(obj.toString())})")
+                    if (zoomIfNeeded) {
+                        ssh?.exec("tmux set -t ${shq(s)} status off")   // finder replaces the tmux bar
+                        if (!zoomed && ids.size > 1 && active.isNotEmpty())
+                            ssh?.exec("tmux resize-pane -Z -t $active")
+                    }
                 }
             } catch (e: Throwable) { Log.e(TAG, "refreshPanes failed", e) }
         }.start()
@@ -380,7 +396,7 @@ class MainActivity : Activity() {
         ssh?.close()
         menuMode = ""; copyMode = false; paneIds = emptyList(); activePaneId = ""
         js("API.hideMenu()"); js("API.setSession(${q(pillName)})"); js("API.busy(${q("Attaching $pillName …")})")
-        js("API.setPanes('[]')")
+        js("API.setLayout('{}')")
         awaitingFirstBytes = true
         ssh = SshSession(
             curIp, port, curUser, keyPath(), curPassword, initialCommand,
@@ -423,7 +439,11 @@ class MainActivity : Activity() {
             "awnext" -> { resume(); ssh?.exec("tmux next-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 300) }
             "awprev" -> { resume(); ssh?.exec("tmux previous-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 300) }
             "sessions" -> { js("API.hideMenu()"); listSessions(curUser, curIp, curName, curPassword) }
-            "detach" -> { js("API.hideMenu()"); ssh?.close(); ssh = null; listSessions(curUser, curIp, curName, curPassword) }
+            "detach" -> {
+                js("API.hideMenu()")
+                ssh?.exec("tmux set -t ${shq(curSession)} status on")   // restore the tmux bar
+                ui.postDelayed({ ssh?.close(); ssh = null; listSessions(curUser, curIp, curName, curPassword) }, 200)
+            }
         }
     }
     private fun resume() { menuMode = ""; js("API.hideMenu()") }
