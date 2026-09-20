@@ -32,11 +32,9 @@
   #keys button svg { width:20px; height:20px; display:block; }
   #keys button:active { background:var(--accent); color:#0b0f12; }
 
-  /* finder — translucent overlay at the bottom of the terminal: window pills + pane map */
-  #finder { position:absolute; left:0; right:0; bottom:0; z-index:6; display:none;
-    flex-direction:column; align-items:center; gap:6px; padding:7px 8px calc(7px + env(safe-area-inset-bottom));
-    background:rgba(13,14,20,0.42); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
-    border-top:1px solid rgba(122,162,247,0.14); }
+  /* finder — reserves its own space (terminal shrinks above it): window pills + pane map */
+  #finder { display:none; flex-direction:column; align-items:center; gap:6px; padding:7px 8px;
+    background:rgba(13,14,20,0.55); border-top:1px solid rgba(122,162,247,0.14); }
   #finder.show { display:flex; }
   #winbar { display:flex; gap:6px; overflow-x:auto; max-width:100%; }
   .win { flex:0 0 auto; padding:5px 10px; border-radius:8px; background:rgba(27,29,44,0.72); border:1px solid #2a2e46;
@@ -99,9 +97,8 @@
       <div id="title">▸ <b id="titleName">—</b></div>
       <button class="tb" id="btnDevices">Devices</button>
     </div>
-    <div id="term">
-      <div id="finder"><div id="winbar"></div><div id="mapwrap"></div></div>
-    </div>
+    <div id="term"></div>
+    <div id="finder"><div id="winbar"></div><div id="mapwrap"></div></div>
     <div id="keys">
       <button data-k="__kbd" aria-label="Keyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
       <button data-k="esc">Esc</button>
@@ -179,7 +176,7 @@
         var f=document.getElementById('finder');
         var wb=document.getElementById('winbar'); wb.innerHTML='';
         var mw=document.getElementById('mapwrap'); mw.innerHTML='';
-        if(!d.windows||!d.windows.length){ f.classList.remove('show'); return; }
+        if(!d.windows||!d.windows.length){ f.classList.remove('show'); setTimeout(doFit,30); return; }
         f.classList.add('show');
         d.windows.forEach(function(w){
           var el=document.createElement('div'); el.className='win'+(w.active?' active':''); el.dataset.idx=w.idx;
@@ -203,6 +200,7 @@
           });
           mw.appendChild(map);
         }
+        setTimeout(doFit,30);   // terminal shrinks to fit above the finder
       },
       setActivePane:function(id){
         Array.prototype.forEach.call(document.querySelectorAll('#finder .pv'),function(el){
