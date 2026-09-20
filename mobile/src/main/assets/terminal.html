@@ -225,7 +225,13 @@
       Array.prototype.forEach.call(document.querySelectorAll('#keys button'),function(b){
         b.onclick=function(){
           var k=b.getAttribute('data-k');
-          if(k==='__kbd'){ inp.focus(); try{Bridge.showKeyboard();}catch(e){} }
+          if(k==='__kbd'){
+            // type straight into the active pane (not the input field)
+            var ta=document.querySelector('.xterm-helper-textarea');
+            if(ta){ ta.removeAttribute('readonly'); ta.setAttribute('inputmode','text'); }
+            term.focus();
+            try{Bridge.showKeyboard();}catch(e){}
+          }
           else try{Bridge.key(k);}catch(e){}
         };
       });
@@ -239,7 +245,11 @@
       // stop xterm's hidden textarea from popping the soft keyboard on every tap;
       // the keyboard only opens via the keyboard button (which focuses #inp).
       var ta=document.querySelector('.xterm-helper-textarea');
-      if(ta){ ta.setAttribute('inputmode','none'); ta.setAttribute('readonly','readonly'); }
+      if(ta){
+        ta.setAttribute('inputmode','none'); ta.setAttribute('readonly','readonly');
+        // when the keyboard closes, go back to no-keyboard-on-tap
+        ta.addEventListener('blur',function(){ ta.setAttribute('inputmode','none'); ta.setAttribute('readonly','readonly'); });
+      }
       doFit();
       term.onData(function(d){ try{Bridge.input(d);}catch(e){} });
       window.addEventListener('resize',doFit);

@@ -120,14 +120,11 @@ class SshSession(
             val buf = java.io.ByteArrayOutputStream()
             ch.connect(timeoutMs)
             val tmp = ByteArray(8192)
-            val deadline = System.nanoTime() + timeoutMs * 1_000_000L
+            // blocking read until EOF — reliable across JSch channel impls
             while (true) {
-                while (ins.available() > 0) {
-                    val n = ins.read(tmp); if (n < 0) break; buf.write(tmp, 0, n)
-                }
-                if (ch.isClosed) break
-                if (System.nanoTime() > deadline) break
-                Thread.sleep(15)
+                val n = ins.read(tmp)
+                if (n < 0) break
+                buf.write(tmp, 0, n)
             }
             buf.toString("UTF-8")
         } catch (_: Throwable) {
