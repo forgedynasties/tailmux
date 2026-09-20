@@ -48,6 +48,7 @@ class MainActivity : Activity() {
     private var paneIds = listOf<String>()
     private var activePaneId = ""
     private var curSession = ""          // the tmux session name (not the host name)
+    private var windowZoomed = false
     @Volatile private var copyMode = false
 
     private val ESC = 0x1b.toByte()
@@ -97,6 +98,35 @@ class MainActivity : Activity() {
         @JavascriptInterface fun scroll(lines: Int) = ui.post { doScroll(lines) }
         @JavascriptInterface fun scrollExit() = ui.post { doScrollExit() }
         @JavascriptInterface fun showKeyboard() = ui.post { showKb() }
+        @JavascriptInterface fun editEnter() = ui.post { doEditEnter() }
+        @JavascriptInterface fun editExit() = ui.post { doEditExit() }
+        @JavascriptInterface fun editSelectPane(id: String) = ui.post { activePaneId = id; js("API.setActivePane(${q(id)})") }
+        @JavascriptInterface fun paneEdit(action: String) = ui.post { doPaneEdit(action) }
+    }
+
+    // ---------- hold-to-edit: resize / re-layout / swap panes (server-side) ----------
+    private fun doEditEnter() {
+        // show the full layout while editing (unzoom the one-pane view)
+        if (windowZoomed && activePaneId.isNotEmpty()) { ssh?.exec("tmux resize-pane -Z -t $activePaneId"); windowZoomed = false }
+        ui.postDelayed({ refreshPanes(false) }, 150)
+    }
+    private fun doEditExit() {
+        if (paneIds.size > 1 && activePaneId.isNotEmpty()) { ssh?.exec("tmux resize-pane -Z -t $activePaneId"); windowZoomed = true }
+        ui.postDelayed({ refreshPanes(false) }, 150)
+    }
+    private fun doPaneEdit(action: String) {
+        if (activePaneId.isEmpty()) return
+        val cmd = when (action) {
+            "grow-l" -> "tmux resize-pane -t $activePaneId -L 5"
+            "grow-r" -> "tmux resize-pane -t $activePaneId -R 5"
+            "grow-u" -> "tmux resize-pane -t $activePaneId -U 5"
+            "grow-d" -> "tmux resize-pane -t $activePaneId -D 5"
+            "layout" -> "tmux next-layout -t ${shq(curSession)}"
+            "swap" -> "tmux swap-pane -t $activePaneId -D"
+            else -> return
+        }
+        ssh?.exec(cmd)
+        ui.postDelayed({ refreshPanes(false) }, 150)
     }
 
     private fun showKb() {
@@ -199,7 +229,7 @@ class MainActivity : Activity() {
                     })
                 }
                 val obj = JSONObject().apply { put("windows", windows); put("w", W); put("h", H); put("panes", panes) }
-                paneIds = ids; if (active.isNotEmpty()) activePaneId = active
+                paneIds = ids; if (active.isNotEmpty()) activePaneId = active; windowZoomed = zoomed
                 val haveFinder = windows.length() > 0
                 ui.post {
                     js("API.setLayout(${q(obj.toString())})")

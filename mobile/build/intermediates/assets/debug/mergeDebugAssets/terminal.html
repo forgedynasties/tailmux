@@ -58,6 +58,16 @@
     font:600 11px/1.1 var(--mono); color:var(--muted); overflow:hidden;
     display:flex; align-items:center; justify-content:center; text-align:center; padding:1px; margin:1.5px; }
   .pv.active { background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }
+  #finder.edit #map { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; height:96px; }
+  /* edit toolbar (hold the map to open) */
+  #editbar { display:none; gap:6px; flex-wrap:wrap; justify-content:center; }
+  #finder.edit #editbar { display:flex; }
+  #editbar button { height:38px; min-width:40px; padding:0 12px; border-radius:8px;
+    background:var(--surface-2); color:var(--text); border:1px solid var(--line-2);
+    font:600 14px var(--mono); display:inline-flex; align-items:center; justify-content:center; }
+  #editbar button.wide { font:600 13px var(--sans); letter-spacing:.2px; }
+  #editbar button:active { background:var(--accent); color:var(--ink); border-color:transparent; }
+  #editbar button.done { background:var(--accent); color:var(--ink); border-color:transparent; }
 
   /* input bar */
   #inbar { display:flex; gap:8px; padding:9px 10px calc(9px + env(safe-area-inset-bottom));
@@ -110,7 +120,19 @@
       <button class="tb" id="btnDevices">Devices</button>
     </div>
     <div id="term"></div>
-    <div id="finder"><div id="winbar"></div><div id="mapwrap"></div></div>
+    <div id="finder">
+      <div id="winbar"></div>
+      <div id="mapwrap"></div>
+      <div id="editbar">
+        <button data-e="grow-l" aria-label="Grow left">◀</button>
+        <button data-e="grow-d" aria-label="Grow down">▼</button>
+        <button data-e="grow-u" aria-label="Grow up">▲</button>
+        <button data-e="grow-r" aria-label="Grow right">▶</button>
+        <button data-e="layout" class="wide">Layout</button>
+        <button data-e="swap" class="wide">Swap</button>
+        <button data-e="done" class="wide done">Done</button>
+      </div>
+    </div>
     <div id="keys">
       <button data-k="__kbd" aria-label="Keyboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/></svg></button>
       <button data-k="esc">Esc</button>
@@ -207,7 +229,10 @@
             el.style.left=(100*p.x/W)+'%'; el.style.top=(100*p.y/H)+'%';
             el.style.width=(100*p.pw/W)+'%'; el.style.height=(100*p.ph/H)+'%';
             el.textContent=p.cmd||p.label;
-            el.onclick=function(){ try{Bridge.selectPane(p.id);}catch(e){} };
+            el.onclick=function(){
+              if(document.getElementById('finder').classList.contains('edit')){ try{Bridge.editSelectPane(p.id);}catch(e){} }
+              else try{Bridge.selectPane(p.id);}catch(e){}
+            };
             map.appendChild(el);
           });
           mw.appendChild(map);
@@ -245,6 +270,23 @@
             try{Bridge.showKeyboard();}catch(e){}
           }
           else try{Bridge.key(k);}catch(e){}
+        };
+      });
+
+      // hold the pane map to open edit mode (resize / layout / swap)
+      var finder=document.getElementById('finder'), mapwrap=document.getElementById('mapwrap'), lp=null;
+      function cancelLp(){ if(lp){ clearTimeout(lp); lp=null; } }
+      mapwrap.addEventListener('touchstart',function(){
+        if(finder.classList.contains('edit')) return;
+        lp=setTimeout(function(){ lp=null; finder.classList.add('edit'); setTimeout(doFit,40); try{Bridge.editEnter();}catch(e){} },450);
+      },{passive:true});
+      mapwrap.addEventListener('touchend',cancelLp);
+      mapwrap.addEventListener('touchmove',cancelLp);
+      Array.prototype.forEach.call(document.querySelectorAll('#editbar button'),function(b){
+        b.onclick=function(){
+          var e=b.getAttribute('data-e');
+          if(e==='done'){ finder.classList.remove('edit'); setTimeout(doFit,40); try{Bridge.editExit();}catch(x){} }
+          else try{Bridge.paneEdit(e);}catch(x){}
         };
       });
     }
