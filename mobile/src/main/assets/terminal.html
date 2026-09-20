@@ -206,6 +206,11 @@
         Array.prototype.forEach.call(document.querySelectorAll('#finder .pv'),function(el){
           el.classList.toggle('active', el.dataset.id===String(id));
         });
+      },
+      setActiveWindow:function(idx){
+        Array.prototype.forEach.call(document.querySelectorAll('#winbar .win'),function(el){
+          el.classList.toggle('active', el.dataset.idx===String(idx));
+        });
       }
     };
 

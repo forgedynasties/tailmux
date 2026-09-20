@@ -106,6 +106,38 @@ class SshSession(
     private fun write(s: String) = send(s.toByteArray(Charsets.UTF_8))
 
     /**
+     * Run [cmd] on this live connection and return its stdout. Reuses the
+     * existing auth (just opens a channel — no new TCP/handshake), so it's much
+     * faster than [runCommand]. Blocking; call off the UI thread.
+     */
+    fun query(cmd: String, timeoutMs: Int = 6000): String {
+        val s = session ?: return ""
+        val ch = s.openChannel("exec") as ChannelExec
+        return try {
+            ch.setCommand(cmd)
+            ch.setPty(false)
+            val ins = ch.inputStream
+            val buf = java.io.ByteArrayOutputStream()
+            ch.connect(timeoutMs)
+            val tmp = ByteArray(8192)
+            val deadline = System.nanoTime() + timeoutMs * 1_000_000L
+            while (true) {
+                while (ins.available() > 0) {
+                    val n = ins.read(tmp); if (n < 0) break; buf.write(tmp, 0, n)
+                }
+                if (ch.isClosed) break
+                if (System.nanoTime() > deadline) break
+                Thread.sleep(15)
+            }
+            buf.toString("UTF-8")
+        } catch (_: Throwable) {
+            ""
+        } finally {
+            try { ch.disconnect() } catch (_: Throwable) {}
+        }
+    }
+
+    /**
      * Run a one-shot command on this live connection via a fresh exec channel
      * (reuses the existing auth — no new TCP/handshake). Used to drive tmux
      * server-side (select-pane, copy-mode, …) so control never goes through the

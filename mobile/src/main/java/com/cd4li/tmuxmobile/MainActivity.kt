@@ -115,13 +115,14 @@ class MainActivity : Activity() {
         ssh?.exec("tmux select-pane -t $id \\; resize-pane -Z -t $id")
         activePaneId = id
         js("API.setActivePane(${q(id)})")
-        ui.postDelayed({ refreshPanes(false) }, 400)
+        ui.postDelayed({ refreshPanes(false) }, 130)
     }
 
     private fun doSelectWindow(idx: String) {
         if (copyMode) doScrollExit()
+        js("API.setActiveWindow(${q(idx)})")   // optimistic highlight
         ssh?.exec("tmux select-window -t ${shq(curSession)}:$idx")
-        ui.postDelayed({ refreshPanes(true) }, 300)
+        ui.postDelayed({ refreshPanes(true) }, 130)
     }
 
     private fun doPaneStep(delta: Int) {
@@ -154,12 +155,12 @@ class MainActivity : Activity() {
     }
 
     private fun refreshPanes(zoomIfNeeded: Boolean) {
-        val s = curSession; if (s.isEmpty() || curIp.isEmpty()) { Log.i(TAG, "refreshPanes skip session='$s' ip='$curIp'"); return }
+        val s = curSession; val conn = ssh
+        if (s.isEmpty() || conn == null) { Log.i(TAG, "refreshPanes skip session='$s'"); return }
         Thread {
             try {
-                // windows + the active window's tiled geometry (unaffected by zoom) + panes
-                val out = SshSession.runCommand(
-                    curIp, port, curUser, keyPath(), curPassword,
+                // one round-trip over the LIVE connection (fast): windows + active window geometry + panes
+                val out = conn.query(
                     "tmux list-windows -t ${shq(s)} -F '#{window_index}|#{window_name}|#{window_active}'; echo '::'; " +
                         "tmux display-message -p -t ${shq(s)} '#{window_zoomed_flag}|#{window_layout}'; echo '::'; " +
                         "tmux list-panes -t ${shq(s)} -F '#{pane_id}|#{pane_index}|#{pane_active}|#{pane_current_command}'"
@@ -406,7 +407,7 @@ class MainActivity : Activity() {
         ).also { it.connect() }
         ui.postDelayed({ js("API.refit()") }, 400)
         ui.postDelayed({ js("API.refit()") }, 1600)
-        ui.postDelayed({ refreshPanes(true) }, 2000)   // populate finder + zoom to one pane
+        ui.postDelayed({ refreshPanes(true) }, 700)   // populate finder + zoom to one pane
     }
 
     // ---------- actions sheet ----------
@@ -436,8 +437,8 @@ class MainActivity : Activity() {
             "resume" -> resume()
             "apane" -> { resume(); doPaneStep(1) }
             "azoom" -> { resume(); if (activePaneId.isNotEmpty()) ssh?.exec("tmux resize-pane -Z -t $activePaneId") }
-            "awnext" -> { resume(); ssh?.exec("tmux next-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 300) }
-            "awprev" -> { resume(); ssh?.exec("tmux previous-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 300) }
+            "awnext" -> { resume(); ssh?.exec("tmux next-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 130) }
+            "awprev" -> { resume(); ssh?.exec("tmux previous-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 130) }
             "sessions" -> { js("API.hideMenu()"); listSessions(curUser, curIp, curName, curPassword) }
             "detach" -> {
                 js("API.hideMenu()")
