@@ -210,6 +210,10 @@
         lineHeight:1.1, cursorBlink:true, cursorStyle:'block', scrollback:5000, theme:THEME, allowTransparency:true });
       fit=new FitAddon.FitAddon(); term.loadAddon(fit);
       term.open(document.getElementById('term'));
+      // stop xterm's hidden textarea from popping the soft keyboard on every tap;
+      // the keyboard only opens via the keyboard button (which focuses #inp).
+      var ta=document.querySelector('.xterm-helper-textarea');
+      if(ta){ ta.setAttribute('inputmode','none'); ta.setAttribute('readonly','readonly'); }
       doFit();
       term.onData(function(d){ try{Bridge.input(d);}catch(e){} });
       window.addEventListener('resize',doFit);
