@@ -23,6 +23,17 @@
 tailnet, pick a device, and attach a session — with a D-pad on the TV or your thumbs on a phone.
 No port-forwarding, no bastion, no fiddly SSH configs.
 
+## Screenshots
+
+Mobile app (**Pulp** theme — dark and light). Device list on the left, an attached session with the pane finder on the right.
+
+|  | Devices | Session · pane finder |
+|--|---------|-----------------------|
+| **Dark** | <img src="docs/img/dev-dark.png" width="220"> | <img src="docs/img/term-dark.png" width="220"> |
+| **Light** | <img src="docs/img/dev-light.png" width="220"> | <img src="docs/img/term-light.png" width="220"> |
+
+<sub>Rendered from the app's own UI with placeholder devices/session.</sub>
+
 ## Features
 
 - **Zero-config auth** — generates its own SSH key on first launch, `ssh-copy-id`s it on the
