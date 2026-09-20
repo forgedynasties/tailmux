@@ -1,11 +1,50 @@
 {
     "logs": [
         {
+            "outputFile": "/home/cd4li/.gradle/daemon/8.11.1/com.cd4li.tmuxmobile-debug-5:/values_values.arsc.flat",
+            "map": [
+                {
+                    "source": "/home/cd4li/me/projects/tailmux/mobile/src/main/res/values/strings.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "47",
+                        "endOffsets": "98"
+                    }
+                },
+                {
+                    "source": "/home/cd4li/me/projects/tailmux/mobile/src/main/res/values/styles.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endLines": "7",
+                        "endColumns": "12",
+                        "endOffsets": "411"
+                    },
+                    "to": {
+                        "startLines": "3",
+                        "startColumns": "4",
+                        "startOffsets": "103",
+                        "endLines": "8",
+                        "endColumns": "12",
+                        "endOffsets": "459"
+                    }
+                }
+            ]
+        },
+        {
             "outputFile": "com.cd4li.tmuxmobile-debug-5:/values_values.arsc.flat",
             "map": [
                 {
                     "source": "/home/cd4li/me/projects/tailmux/mobile/src/main/res/values/strings.xml",
                     "from": {
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
+                    },
+                    "to": {
                         "startLines": "2",
                         "startColumns": "4",
                         "startOffsets": "55",
