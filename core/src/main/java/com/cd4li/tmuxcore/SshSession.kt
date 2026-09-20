@@ -117,6 +117,7 @@ class SshSession(
             ch.setCommand(cmd)
             ch.setPty(false)
             val ins = ch.inputStream
+            val ers = ch.errStream
             val buf = java.io.ByteArrayOutputStream()
             ch.connect(timeoutMs)
             val tmp = ByteArray(8192)
@@ -126,9 +127,12 @@ class SshSession(
                 if (n < 0) break
                 buf.write(tmp, 0, n)
             }
+            val err = java.io.ByteArrayOutputStream()
+            while (ers.available() > 0) { val n = ers.read(tmp); if (n < 0) break; err.write(tmp, 0, n) }
+            Log.i(TAG, "query exit=${ch.exitStatus} outLen=${buf.size()} err=[${err.toString("UTF-8").take(160)}]")
             buf.toString("UTF-8")
-        } catch (_: Throwable) {
-            ""
+        } catch (e: Throwable) {
+            Log.e(TAG, "query failed", e); ""
         } finally {
             try { ch.disconnect() } catch (_: Throwable) {}
         }

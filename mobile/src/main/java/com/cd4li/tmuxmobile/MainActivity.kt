@@ -159,12 +159,16 @@ class MainActivity : Activity() {
         if (s.isEmpty() || conn == null) { Log.i(TAG, "refreshPanes skip session='$s'"); return }
         Thread {
             try {
-                // one round-trip over the LIVE connection (fast): windows + active window geometry + panes
-                val out = conn.query(
+                val cmd =
                     "tmux list-windows -t ${shq(s)} -F '#{window_index}|#{window_name}|#{window_active}'; echo '::'; " +
                         "tmux display-message -p -t ${shq(s)} '#{window_zoomed_flag}|#{window_layout}'; echo '::'; " +
                         "tmux list-panes -t ${shq(s)} -F '#{pane_id}|#{pane_index}|#{pane_active}|#{pane_current_command}'"
-                )
+                // fast path over the live connection; fall back to a fresh connection if it comes back empty
+                var out = conn.query(cmd)
+                if (out.isBlank()) {
+                    Log.i(TAG, "query empty, falling back to runCommand")
+                    out = SshSession.runCommand(curIp, port, curUser, keyPath(), curPassword, cmd)
+                }
                 Log.i(TAG, "layout out=[${out.replace("\n", "\\n")}]")
                 val chunks = out.split("::")
                 val windows = JSONArray()
@@ -196,10 +200,11 @@ class MainActivity : Activity() {
                 }
                 val obj = JSONObject().apply { put("windows", windows); put("w", W); put("h", H); put("panes", panes) }
                 paneIds = ids; if (active.isNotEmpty()) activePaneId = active
+                val haveFinder = windows.length() > 0
                 ui.post {
                     js("API.setLayout(${q(obj.toString())})")
-                    if (zoomIfNeeded) {
-                        ssh?.exec("tmux set -t ${shq(s)} status off")   // finder replaces the tmux bar
+                    if (zoomIfNeeded && haveFinder) {   // only hide the tmux bar once the finder actually shows
+                        ssh?.exec("tmux set -t ${shq(s)} status off")
                         if (!zoomed && ids.size > 1 && active.isNotEmpty())
                             ssh?.exec("tmux resize-pane -Z -t $active")
                     }
