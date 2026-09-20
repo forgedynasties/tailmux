@@ -139,28 +139,43 @@ class MainActivity : Activity() {
         val s = curSession; if (s.isEmpty() || curIp.isEmpty()) { Log.i(TAG, "refreshPanes skip session='$s' ip='$curIp'"); return }
         Thread {
             try {
+                // window_layout carries the tiled geometry (unaffected by zoom); list-panes gives id/active/cmd
                 val out = SshSession.runCommand(
                     curIp, port, curUser, keyPath(), curPassword,
-                    "tmux list-panes -t ${shq(s)} -F '#{pane_id}|#{pane_index}|#{pane_active}|#{pane_current_command}|#{window_zoomed_flag}' 2>/dev/null || true"
+                    "tmux display-message -p -t ${shq(s)} '#{window_zoomed_flag}|#{window_layout}'; echo '::'; " +
+                        "tmux list-panes -t ${shq(s)} -F '#{pane_id}|#{pane_index}|#{pane_active}|#{pane_current_command}'"
                 )
-                Log.i(TAG, "list-panes out=[${out.replace("\n", "\\n")}]")
-                val arr = JSONArray(); val ids = ArrayList<String>(); var active = ""; var zoomed = false
-                for (line in out.lines()) {
-                    val p = line.trim().split("|"); if (p.size < 5) continue
+                Log.i(TAG, "panes out=[${out.replace("\n", "\\n")}]")
+                val chunks = out.split("::")
+                val head = chunks.getOrNull(0)?.trim().orEmpty()
+                val zoomed = head.substringBefore("|") == "1"
+                val layout = head.substringAfter("|", "")
+                val W = Regex("""^[0-9a-f]+,(\d+)x(\d+)""").find(layout)?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                val H = Regex("""^[0-9a-f]+,(\d+)x(\d+)""").find(layout)?.groupValues?.get(2)?.toIntOrNull() ?: 0
+                // leaves in window_layout: WxH,X,Y,<paneNum>
+                val geo = HashMap<String, IntArray>()
+                Regex("""(\d+)x(\d+),(\d+),(\d+),(\d+)""").findAll(layout).forEach { m ->
+                    val (w, h, x, y, pn) = m.destructured
+                    geo[pn] = intArrayOf(x.toInt(), y.toInt(), w.toInt(), h.toInt())
+                }
+                val panes = JSONArray(); val ids = ArrayList<String>(); var active = ""
+                for (line in (chunks.getOrNull(1) ?: "").lines()) {
+                    val p = line.trim().split("|"); if (p.size < 4) continue
                     val id = p[0]; if (id.isEmpty()) continue
-                    if (p[2] == "1") active = id
-                    zoomed = p[4] == "1"
-                    ids.add(id)
-                    arr.put(JSONObject().apply {
+                    val g = geo[id.removePrefix("%")] ?: continue
+                    ids.add(id); if (p[2] == "1") active = id
+                    panes.put(JSONObject().apply {
                         put("id", id); put("label", p[1]); put("cmd", p[3]); put("active", p[2] == "1")
+                        put("x", g[0]); put("y", g[1]); put("pw", g[2]); put("ph", g[3])
                     })
                 }
+                val obj = JSONObject().apply { put("w", W); put("h", H); put("panes", panes) }
                 paneIds = ids; if (active.isNotEmpty()) activePaneId = active
                 ui.post {
-                    js("API.setPanes(${q(arr.toString())})")
-                    if (zoomIfNeeded && !zoomed && ids.isNotEmpty()) tmuxCmd("resize-pane -Z")
+                    js("API.setPanes(${q(obj.toString())})")
+                    if (zoomIfNeeded && !zoomed && ids.size > 1) tmuxCmd("resize-pane -Z")
                 }
-            } catch (e: Throwable) { Log.e(TAG, "list-panes failed", e) }
+            } catch (e: Throwable) { Log.e(TAG, "refreshPanes failed", e) }
         }.start()
     }
 
