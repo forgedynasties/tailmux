@@ -40,8 +40,8 @@
 26-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:18:13-36
 27            android:launchMode="singleTask"
 27-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:20:13-44
-28            android:windowSoftInputMode="adjustResize" >
-28-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:19:13-55
+28            android:windowSoftInputMode="adjustPan" >
+28-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:19:13-52
 29            <intent-filter>
 29-->/home/cd4li/me/projects/tailmux/mobile/src/main/AndroidManifest.xml:21:13-24:29
 30                <action android:name="android.intent.action.MAIN" />
