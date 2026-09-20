@@ -249,6 +249,7 @@ class MainActivity : Activity() {
 
     // ---------- startup / token ----------
     private fun onReady() {
+        js("API.setTheme('${prefs.getString("theme", "dark")}')")
         val t = token()
         if (t.isNullOrBlank()) promptToken(true) else loadHosts()
     }
@@ -457,6 +458,7 @@ class MainActivity : Activity() {
         arr.put(obj("awprev", "Prev window", null, "◁", null))
         arr.put(obj("sessions", "Sessions", null, "▪", null))
         arr.put(obj("detach", "Detach", "leave tmux running", "⏏", null))
+        arr.put(obj("theme", "Theme", if (prefs.getString("theme", "dark") == "light") "switch to dark" else "switch to light", "◐", null))
         js("API.showMenu(${q("<b>$curName</b>")}, ${q("tap an action")}, ${q(arr.toString())})")
     }
 
@@ -475,6 +477,11 @@ class MainActivity : Activity() {
             "awnext" -> { resume(); ssh?.exec("tmux next-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 130) }
             "awprev" -> { resume(); ssh?.exec("tmux previous-window -t ${shq(curSession)}"); ui.postDelayed({ refreshPanes(true) }, 130) }
             "sessions" -> { js("API.hideMenu()"); listSessions(curUser, curIp, curName, curPassword) }
+            "theme" -> {
+                val next = if (prefs.getString("theme", "dark") == "light") "dark" else "light"
+                prefs.edit().putString("theme", next).apply()
+                js("API.setTheme('$next')"); resume()
+            }
             "detach" -> {
                 js("API.hideMenu()")
                 ssh?.exec("tmux set -t ${shq(curSession)} status on")   // restore the tmux bar
